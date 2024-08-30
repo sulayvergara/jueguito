@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Battleship!</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./assets/icons/favicon-16x16.png">
+  <link rel="stylesheet" href="./css/normalize.min.css">
+  <link rel="stylesheet" href="./css/skeleton.min.css">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+  <div class="background">
+    <div class="background-overlay">
+      <header class="header">
+        <div class="logo">
+          <a href="./menu.html">
+            <img src="./assets/img/battleship.svg" alt="Battleship">
+            <h1 class="text-center">Battle<span style="color: antiquewhite;">ship!</span></h1>
+          </a>
+        </div>
+        <div class="status-text text-center">
+          <div class="status">
+            <h1 class="text-center"><span style="color: rgb(218, 26, 26);">Ronda:</span> <span
+                id="current-round-txt"></span></h1>
+          </div>
+          <div class="status">
+            <h1 class="text-center"><span style="color: rgb(218, 26, 26);">Estado:</span> <span
+                id="current-turn-txt"></span>
+            </h1>
+          </div>
+        </div>
+      </header>
+      <main>
+        <div id="game">
+          <div class="board">
+            <div class="displays">
+              <div class="left">
+                <div class="grid" id="enemy-grid">
+                </div>
+              </div>
+              <div class="right">
+                <div class="grid" id="friendly-grid">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panels">
+            <div id="console" class="console">
+              <h5 class="text-center"><strong>Notificacion y Chat</strong></h5>
+              <ul id="chat-messages-list">
+              </ul>
+              <form>
+                <input type="text" name="chat-message" class="u-full-width" id="chat-message-input"
+                  placeholder="Enter your message..." required autocomplete="off">
+                <input class="button-primary" type="submit" value="Send">
+              </form>
+            </div>
+            <div class="info">
+              <h5 class="text-center"><strong>Flota</strong></h5>
+              <table>
+                <thead>
+                  <th>#</th>
+                  <th>Tipo de Barco</th>
+                  <th>Tamaño</th>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>10x</td>
+                    <td>Battleship</td>
+                    <td>1</td>
+                  </tr>
+                  <!-- <tr>
+                    <td>1x</td>
+                    <td>Carrier</td>
+                    <td>5</td>
+                  </tr>
+                  <tr>
+                    <td>1x</td>
+                    <td>Battleship</td>
+                    <td>4</td>
+                  </tr>
+                  <tr>
+                    <td>1x</td>
+                    <td>Cruiser</td>
+                    <td>3</td>
+                  </tr>
+                  <tr>
+                    <td>2x</td>
+                    <td>Destroyer</td>
+                    <td>2</td>
+                  </tr>
+                  <tr>
+                    <td>2x</td>
+                    <td>Submarine</td>
+                    <td>1</td>
+                  </tr> -->
+                </tbody>
+              </table>
+            </div>
+            <div class="panel">
+              <h5 class="text-center"><strong>Menu Principal</strong></h5>
+              <button class="button" id="show-rules-btn">Reglas</button>
+              <button class="button" id="toogle-music-btn">Música</button>
+              <button class="button" id="toogle-sound-btn">Sonido</button>
+              <button class="button" id="toggle-fullscreen-btn">Pantalla Completa</button>
+              <button class="button-primary" id="leave-game-btn">Salir de Partida</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.4/qs.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="./js/game.js"></script>
+</body>
+
+</html>

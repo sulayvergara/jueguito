@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battleship</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="login-container">
+        <h2>Login</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Contraseña">
+        <button id="login-btn">Iniciar Sesión</button>
+        <p>¿No tienes cuenta? <a href="#" id="show-register">Regístrate</a></p>
+    </div>
+
+    <div id="register-container" style="display:none;">
+        <h2>Registro</h2>
+        <input type="text" id="reg-nombre" placeholder="Nombre" required>
+        <input type="text" id="reg-apellido" placeholder="Apellido" required>
+        <input type="text" id="reg-curso" placeholder="Curso" required>
+        <input type="text" id="reg-paralelo" placeholder="Paralelo" required>
+        <input type="email" id="reg-email" placeholder="Email" required>
+        <input type="date" id="reg-fecha-nacimiento" required>
+        <input type="password" id="reg-clave" placeholder="Contraseña" required>
+        <button id="register-btn">Registrarse</button>
+        <p>Si ya tienes cuenta, click en <a href="#" id="show-login">Login</a></p>
+    </div>
+
+    <div id="game-container" style="display:none;">
+        <h2>Battleship</h2>
+        <div id="game-status"></div>
+        <div id="waiting-message" style="display:none;">Esperando a otro jugador...</div>
+        <div id="game-options">
+            <button id="create-game">Crear Partida</button>
+            <button id="cancel-search" style="display:none;">Cancelar Búsqueda</button>
+            <div id="join-game">
+                <input type="text" id="game-code" placeholder="Código de partida">
+                <button id="join-game-btn">Unirse a Partida</button>
+            </div>
+        </div>
+   
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/socket.js"></script>
+    <script src="/js/auth.js"></script>
+</body>
+</html>

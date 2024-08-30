@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Battleship!</title>
+  <meta name="descripcion"
+    content="Juego multijugador de 'Battleship' usando Express, Node.js y Socket.ip">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./assets/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./assets/icons/favicon-16x16.png">
+
+  <link rel="stylesheet" href="./css/normalize.min.css">
+  <link rel="stylesheet" href="./css/skeleton.min.css">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+  <div class="background">
+    <div class="background-overlay">
+      <header class="header">
+        <div class="logo">
+          <a href="./menu.html">
+            <img src="./assets/img/battleship.svg" alt="Battleship">
+            <h1 class="text-center">Battle<span style="color: antiquewhite;">ship!</span></h1>
+          </a>
+        </div>
+      </header>
+      <main>
+        <div id="game">
+          <div class="panels">
+            <div class="panel main-menu">
+              <div class="tab" id="main-tab">
+                <h5 class="text-center"><strong>Menu Principal</strong></h5>
+                <button class="button-primary tab-trigger" id="create-btn" data-targets="create-tab">Crear Nueva Partida</button>
+                <button class="button-primary tab-trigger" id="join-btn" data-targets="join-tab">Unirte A Partida Existente</button>
+                <button class="button tab-trigger" id="show-rules-btn" data-targets="rules-tab">Reglas</button>
+                <br>
+                <h6 class="text-center"><strong>Opciones/strong></h6>
+                <button class="button secondary-btn" id="toggle-music-btn">Mostrar/Ocultar Música</button>
+                <button class="button secondary-btn" id="toggle-sound-btn">Mostrar/Ocultar Sonido</button>
+                <button class="button secondary-btn" id="toggle-fullscreen-btn">Pantalla Completa</button>
+                <br>
+                <p class="text-center">&copy; <span>2024</span> Creado por <a
+                    href="https://github.com/ups-gye/Disociados">Disociados</a>.</p>
+              </div>
+              <div class="tab hidden" id="create-tab">
+                <h5 class="text-center"><strong>Crear Nueva Partida</strong></h5>
+                <form id="create-form" action="/games" method="post">
+                  <label for="player-name">Nombre de Jugador:</label>
+                  <input type="text" name="playerName" class="u-full-width player-name" required>
+                  <!-- <label for="password">Game Password (optional):</label>
+                  <input type="password" name="password" id="password" class="u-full-width"> -->
+                  <button type="submit" class="button button-primary">Crear Partida</button>
+                </form>
+                <br>
+                <button class="button tab-trigger" data-targets="main-tab">Regresar al menu</button>
+              </div>
+              <div class="tab hidden" id="join-tab">
+                <h5 class="text-center"><strong>Regresar al menu</strong></h5>
+                <form id="join-form" action="/games/join" method="get">
+                  <label for="player-name">Nombre de Jugador:</label>
+                  <input type="text" name="playerName" class="u-full-width player-name" required>
+                  <label for="game">Partidas Existentes:</label>
+                  <select name="game" id="games-list" class="u-full-width" required>
+                  </select>
+                  <button type="submit" class="button button-primary">Unirse a partida</button>
+                  <button class="button secondary-btn" id="refresh-games-btn">Recargar LIsta de partidas</button>
+                </form>
+                <br>
+                <button class="button tab-trigger" data-targets="main-tab">Regresar al menu</button>
+              </div>
+              <div class="tab hidden" id="rules-tab">
+                <h5 class="text-center"><strong>Reglas</strong></h5>
+                <p>TODO: Al entrar en partida primero se debe colocar puntos de barco en el cuadro propio
+                  , esperar que el otro jugador igual los coloque y comenzará el juego, por turnos, deberan
+                  marcar un cuadro para adivinar la posicion de los barcos enemigos, el primero en tumbar 
+                  los 10 barcos(cuadros) ganará la partida, el cuadro en rojo simboliza que impactaste y 
+                  el cuadro rosado que pegaste al agua.
+                </p>
+                <button class="button tab-trigger" data-targets="main-tab">Regresar al menu</button>
+              </div>
+  
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="./js/main.js"></script>
+</body>
+
+</html>

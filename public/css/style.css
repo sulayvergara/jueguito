@@ -1,0 +1,273 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100;300;400&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  scroll-behavior: smooth;
+  color: #f5f5f5;
+  min-height: 100vh;
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 300 !important;
+}
+
+button,
+input[type='submit'],
+.button,
+.button-primary {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 300;
+  font-size: 1.5rem;
+}
+
+.background {
+  background-image: url('../assets/img/bg.webp');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.background-overlay {
+  background-color: #1b647abb;
+  background-blend-mode: darken;
+  min-height: 100vh;
+}
+
+.header {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.header h1 {
+  padding: 1rem 0;
+  font-size: 2.25rem;
+  margin: 0 auto;
+}
+
+.header .logo {
+  margin: 0 auto;
+}
+
+.header .logo a {
+  display: flex;
+  text-decoration: none;
+  flex: 2;
+}
+
+.header .logo img {
+  padding: 1rem 0;
+  width: 65px;
+  height: 65px;
+}
+
+.header .logo h1 {
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  font-size: 3.5rem;
+  font-weight: 100;
+  color: rgb(218, 26, 26);
+}
+
+.status-text {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  flex: 10;
+}
+
+.header .status {
+  margin: 0 auto;
+}
+
+.displays,
+.panels {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  margin-top: 1rem;
+}
+
+.grid {
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 1em;
+  background-color: rgba(0, 0, 0, 0.7);
+  margin: 1rem;
+  padding: 1.5rem;
+}
+
+.grid table {
+  font-size: 1.4rem;
+  border-spacing: 5px;
+  padding: 1rem;
+}
+
+.grid table caption h5 {
+  margin: 0;
+  margin-bottom: 2rem;
+  text-transform: capitalize;
+}
+
+.left .grid table caption {
+  color: rgb(218, 26, 26);
+}
+
+.right .grid table caption {
+  color: #33c3f0;
+}
+
+.grid table,
+.grid th,
+.grid td {
+  border-collapse: collapse;
+  text-transform: uppercase;
+}
+
+.grid table th {
+  text-align: center;
+  padding: 0.25rem 0.75rem;
+  border: none;
+}
+
+.grid table td {
+  background-color: #33c3f0;
+  border: 1px solid rgba(0, 0, 0, 0.7);
+  padding: 0.25rem 0.75rem;
+}
+
+.grid table td.ship {
+  background-color: rgb(68, 68, 68);
+}
+
+.grid table td.water-hit {
+  background-color: rgb(238, 159, 159);
+}
+
+.grid table td.ship-hit {
+  background-color: rgb(209, 15, 15);
+}
+
+.grid table td:hover {
+  background-color: #206f86;
+  cursor: pointer;
+}
+
+.panel,
+.info,
+.console {
+  padding: 1.5rem;
+  margin: 1.5rem 2rem;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 1em;
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.panel {
+  flex: 1;
+  max-width: 250px;
+  align-self: flex-start;
+}
+
+.panel.main-menu {
+  max-width: 600px;
+  margin-top: 10vh;
+}
+
+.panel.main-menu button {
+  width: 100%;
+}
+
+.panel.main-menu button:not(:first-of-type) {
+  margin-top: 2rem;
+}
+
+.info {
+  flex: 2;
+  max-width: 260px;
+  align-self: flex-start;
+}
+
+.info table {
+  margin: 2rem auto;
+}
+
+.panel button {
+  display: block;
+  margin: 1rem auto;
+  width: 220px;
+}
+
+.info table th,
+.info table td {
+  padding: 0.5rem 1rem;
+}
+
+.console {
+  flex: 3;
+  min-width: 300px;
+}
+
+.button {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #f5f5f5;
+}
+
+.button:hover,
+.button:focus {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #f5f5f5;
+}
+
+.button-primary {
+  color: #000 !important;
+  font-weight: 400 !important;
+}
+
+.console ul {
+  list-style: none;
+  background-color: rgb(204, 204, 204);
+  height: 160px;
+  overflow-y: scroll;
+  margin: 1rem auto;
+}
+
+.console ul li {
+  word-wrap: break-word;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  color: #000;
+}
+
+.console ul li:nth-child(odd) {
+  background-color: rgb(221, 221, 221);
+}
+
+.console form {
+  display: flex;
+}
+
+.console form input[type='text'] {
+  margin: 0.25rem 0.25rem 0 0;
+  flex: 11;
+  font-size: 1.5rem;
+}
+
+.console form input[type='submit'] {
+  margin: 0.25rem 0 0 0.25rem;
+  flex: 1;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.hidden {
+  display: none;
+}
