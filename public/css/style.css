@@ -178,6 +178,7 @@ input[type='submit'],
 .panel.main-menu {
   max-width: 600px;
   margin-top: 10vh;
+  width: 100%;
 }
 
 .panel.main-menu button {
