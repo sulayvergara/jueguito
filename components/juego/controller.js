@@ -1,27 +1,47 @@
-const gameinterface = require('./interface');
-const generateUUID = require('../../components/helpers/generateUUID');
+const storage = require('./storage');
 
-async function createNewGame(playerName, playerId) {
-    const gameId = generateUUID();
+async function createGame(players) {
     const gameData = {
-      id: gameId,
-      name: `${playerName}'s Game`,
-      players: [playerId],
-      playerGrids: new Map(),
-      playerShipsPlaced: new Map(),
-      playerShipsLost: new Map()
+        players: players,
+        rounds: 0,
+        status: 'in_progress'
     };
-    return gameinterface.createGame(gameData);
-  }
-  
-  async function getGameById(id) {
-    return gameinterface.findGameById(id);
-  }
-  
-  // Add other controller methods as needed
-  
-  module.exports = {
-    createNewGame,
-    getGameById,
-    // Export other methods
-  };
+    return await storage.add(gameData);
+}
+
+async function endGame(id, winner) {
+    const gameData = {
+        winner: winner,
+        endTime: new Date(),
+        status: 'completed'
+    };
+    return await storage.update(id, gameData);
+}
+
+async function addMove(id, player, position, result) {
+    const game = await storage.get(id);
+    game.moves.push({
+        player: player,
+        position: position,
+        result: result,
+        round: game.rounds + 1
+    });
+    game.rounds += 1;
+    return await storage.update(id, game);
+}
+
+async function getGameDetails(id) {
+    return await storage.get(id);
+}
+
+async function getAllGames() {
+    return await storage.getAll();
+}
+
+module.exports = {
+    createGame,
+    endGame,
+    addMove,
+    getGameDetails,
+    getAllGames
+};

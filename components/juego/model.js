@@ -1,24 +1,50 @@
 const mongoose = require('mongoose');
-const schema = mongoose.Schema;
+const Schema = mongoose.Schema;
 
 // Define the schema for the juego collection
 
-
-const gameSchema = new schema({
-  players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  gameState: {
-    type: String,
-    enum: ['gameIsInitializing', 'gameInitialized', 'setShipsRound', 'gameRunning', 'gameOver'],
-    default: 'gameIsInitializing'
+const gameSchema = new Schema({
+  players: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Usuario',
+      required: true
+  }],
+  winner: {
+      type: Schema.Types.ObjectId,
+      ref: 'Usuario'
   },
-  isListed: { type: Boolean, default: true },
-  playerGrids: { type: Map, of: [[Number]] },
-  playerShipsPlaced: { type: Map, of: Number },
-  playerShipsLost: { type: Map, of: Number },
-  currentTurn: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  rounds: {
+      type: Number,
+      required: true,
+      default: 0
+  },
+  startTime: {
+      type: Date,
+      default: Date.now
+  },
+  endTime: {
+      type: Date
+  },
+  status: {
+      type: String,
+      enum: ['in_progress', 'completed', 'abandoned'],
+      default: 'in_progress'
+  },
+  moves: [{
+      player: {
+          type: Schema.Types.ObjectId,
+          ref: 'Usuario'
+      },
+      position: {
+          x: Number,
+          y: Number
+      },
+      result: {
+          type: String,
+          enum: ['hit', 'miss']
+      },
+      round: Number
+  }]
 });
 
-// Create a model based on the schema
-const Game = mongoose.model('Game', gameSchema);
-
-module.exports = Game;
+module.exports = mongoose.model('Game', gameSchema);

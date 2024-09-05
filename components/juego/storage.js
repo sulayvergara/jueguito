@@ -1,20 +1,25 @@
+const Game = require('./model');
 
-const Juego = require('./model');
-
-
-async function createGame(gameData) {
-  const game = new Juego(gameData);
-  return await game.save();
+async function addGame(gameData) {
+    const game = new Game(gameData);
+    return await game.save();
 }
 
-async function findGameById(id) {
-  return await Juego.findOne({ id });
+async function getGame(id) {
+    return await Game.findById(id).populate('players').populate('winner');
 }
 
-// Add other CRUD operations as needed
+async function updateGame(id, gameData) {
+    return await Game.findByIdAndUpdate(id, gameData, { new: true });
+}
+
+async function getAllGames() {
+    return await Game.find().populate('players').populate('winner');
+}
 
 module.exports = {
-  createGame,
-  findGameById,
-  // Export other functions
+    add: addGame,
+    get: getGame,
+    update: updateGame,
+    getAll: getAllGames
 };
