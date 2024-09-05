@@ -27,12 +27,13 @@ async function login(email, clave) {
         console.log('Intentando iniciar sesión con:', email);
         const user = await getUsuario(email);
         console.log('Usuario encontrado:', user);
+
         if (user && clave === user.clave.trim) {
             return {
                 id: user._id,
                 nombre: user.nombre,
                 email: user.email,
-                // Añade aquí otros campos que quieras devolver
+                usuario: user.usuario,
             };
         }else {
             console.log('Credenciales inválidas o usuario no encontrado');

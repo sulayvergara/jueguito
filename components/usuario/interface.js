@@ -4,9 +4,30 @@ const router = express.Router();
 
 router.post('/registro', async (req, res) => {
     try {
-        const usuario = await controller.addUsuario(req.body);
+        const { nombre, apellido, email, clave, curso, paralelo, fecha_nacimiento } = req.body;
+        
+        // Agregar log para verificar los datos recibidos
+        console.log('Datos recibidos para registro:', req.body);
+
+        // Verificar que los campos requeridos estén presentes
+        if (!nombre || !apellido || !email || !clave) {
+            return res.status(400).json({ message: 'Faltan datos requeridos' });
+        }
+
+        // Crear el usuario utilizando el controlador
+        const usuario = await controller.addUsuario({
+            nombre,
+            apellido,
+            email,
+            clave,
+            curso,
+            paralelo,
+            fecha_nacimiento
+        });
+
         res.status(201).json({ message: 'Usuario creado con éxito', usuario });
     } catch (error) {
+        console.error('Error al registrar usuario:', error);
         res.status(400).json({ message: 'Error al crear usuario', error: error.message });
     }
 });
