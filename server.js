@@ -6,7 +6,7 @@ const { Server: WebsocketServer } = require('socket.io');
 const config = require('./network/config')
 const routes = require('./network/routes')
 const db = require('./network/db')
-const { registerHandler, loginHandler,} = require('./public/js/socket');
+const { registerHandler, loginHandler, initializeSocket} = require('./public/js/socket');
 
 var app = express()
 const server = http.createServer(app);
@@ -53,7 +53,7 @@ class Partida {
 
 const path = require('path');
 const generateUUID = require('./components/helpers/generateUUID');
-const Game = require('./components/juego/constructor');
+const Game = require('./components/juego/game');
 const Player = require('./components/usuario/player');
 
 // Games data - managed in-memory while server is running
