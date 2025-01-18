@@ -41,6 +41,7 @@
     setShipsRound: "setShipsRound",
     gameRunning: "gameRunning",
     gameOver: "gameOver",
+    //question: "gameQuestion"
   };
 
   // Global state variables

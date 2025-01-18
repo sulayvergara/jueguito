@@ -139,6 +139,7 @@ const gameStates = {
   setShipsRound: "setShipsRound",
   gameRunning: "gameRunning",
   gameOver: "gameOver",
+  question: "gameQuestion"
 };
 
 // Letter for array-number lookup
@@ -303,9 +304,11 @@ io.on("connection", (socket) => {
             "message",
             "All ships are placed! Let the fighting begin!"
           );
+          //esto debo cambiar el estado del juego a questions
           io.to(state.gameId).emit("nextRound");
 
           // The player who first places all of his ships gets the first turn
+          //aqui le dare el turno al jugador 
           socket.emit("yourTurn", false);
           socket.broadcast.to(state.gameId).emit("yourTurn", true);
         }
