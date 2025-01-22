@@ -6,7 +6,6 @@ const response = require('../../network/response')
 const routes = express.Router()
 
 // preguntas/interface.js
-// preguntas/interface.js
 routes.get('/', function(req, res) {
   controller.obtenerPreguntas()
       .then(data => res.status(200).json(data))  // Enviar los datos directamente como JSON
