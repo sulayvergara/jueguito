@@ -4,14 +4,38 @@ const router = express.Router();
 
 router.post('/registro', async (req, res) => {
     try {
-        const { nombre, apellido, email, clave, curso, paralelo, fecha_nacimiento } = req.body;
-        
+        const { 
+            nombre, 
+            apellido, 
+            email, 
+            clave, 
+            curso, 
+            paralelo, 
+            fecha_nacimiento, 
+            rol, 
+            especialidad, 
+            años_experiencia 
+        } = req.body;
+
         // Agregar log para verificar los datos recibidos
         console.log('Datos recibidos para registro:', req.body);
 
-        // Verificar que los campos requeridos estén presentes
+        // Verificar que el rol esté presente y sea válido
+        if (!rol || !['estudiante', 'profesor'].includes(rol)) {
+            return res.status(400).json({ message: 'El campo rol es requerido y debe ser "estudiante" o "profesor"' });
+        }
+
+        // Verificar que los campos requeridos estén presentes según el rol
         if (!nombre || !apellido || !email || !clave) {
-            return res.status(400).json({ message: 'Faltan datos requeridos' });
+            return res.status(400).json({ message: 'Faltan datos requeridos: nombre, apellido, email o clave' });
+        }
+
+        if (rol === 'estudiante' && (!curso || !paralelo)) {
+            return res.status(400).json({ message: 'Faltan datos requeridos: curso y paralelo son obligatorios para estudiantes' });
+        }
+
+        if (rol === 'profesor' && (!especialidad || años_experiencia == null)) {
+            return res.status(400).json({ message: 'Faltan datos requeridos: especialidad y años de experiencia son obligatorios para profesores' });
         }
 
         // Crear el usuario utilizando el controlador
@@ -22,7 +46,10 @@ router.post('/registro', async (req, res) => {
             clave,
             curso,
             paralelo,
-            fecha_nacimiento
+            fecha_nacimiento,
+            rol,
+            especialidad,
+            años_experiencia
         });
 
         res.status(201).json({ message: 'Usuario creado con éxito', usuario });
@@ -31,6 +58,7 @@ router.post('/registro', async (req, res) => {
         res.status(400).json({ message: 'Error al crear usuario', error: error.message });
     }
 });
+
 
 router.post('/login', async (req, res) => {
     try {

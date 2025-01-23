@@ -19,14 +19,33 @@
         <h2>Registro</h2>
         <input type="text" id="reg-nombre" placeholder="Nombre" required>
         <input type="text" id="reg-apellido" placeholder="Apellido" required>
-        <input type="text" id="reg-curso" placeholder="Curso" required>
-        <input type="text" id="reg-paralelo" placeholder="Paralelo" required>
+        
+        <!-- Campo para seleccionar el rol -->
+        <select id="reg-rol" required>
+            <option value="" disabled selected>Selecciona un rol</option>
+            <option value="estudiante">Estudiante</option>
+            <option value="profesor">Profesor</option>
+        </select>
+        
+        <!-- Campos específicos para estudiantes -->
+        <div id="estudiante-fields" style="display:none;">
+            <input type="text" id="reg-curso" placeholder="Curso" required>
+            <input type="text" id="reg-paralelo" placeholder="Paralelo" required>
+        </div>
+        
+        <!-- Campos específicos para profesores -->
+        <div id="profesor-fields" style="display:none;">
+            <input type="text" id="reg-especialidad" placeholder="Especialidad" required>
+            <input type="number" id="reg-experiencia" placeholder="Años de experiencia" min="0" required>
+        </div>
+        
         <input type="email" id="reg-email" placeholder="Email" required>
         <input type="date" id="reg-fecha-nacimiento" required>
         <input type="password" id="reg-clave" placeholder="Contraseña" required>
         <button id="register-btn">Registrarse</button>
         <p>Si ya tienes cuenta, click en <a href="#" id="show-login">Login</a></p>
     </div>
+    
 
     <div id="game-container" style="display:none;">
         <h2>Battleship</h2>
