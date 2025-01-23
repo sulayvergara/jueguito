@@ -34,6 +34,7 @@ async function login(email, clave) {
                 nombre: user.nombre,
                 email: user.email,
                 usuario: user.usuario,
+                rol: user.rol,
             };
         }else {
             console.log('Credenciales inválidas o usuario no encontrado');

@@ -168,34 +168,6 @@ async function obtenerPreguntaAleatoria() {
   }
 }
 
-// Update the startQuestionRound function to handle the response properly
-// async function startQuestionRound(game, io) {
-//   console.log("llamando funcion startquestionround server.js");
-//   try {
-//     console.log('Iniciando ronda de preguntas para el juego:', game.id);
-//     const question = await obtenerPreguntaAleatoria();
-//     console.log('Pregunta obtenida para mostrar:', question);
-//     if (question) {
-//       game.currentQuestion = question;
-//       console.log('Emitiendo pregunta al cliente...');
-//       io.to(game.id).emit('showQuestion', question);
-      
-//       console.log('Iniciando temporizador de 30 segundos');
-//       // Start 30 second timer
-//       game.questionTimer = setTimeout(() => {
-//         console.log('Tiempo agotado para la pregunta. Obteniendo nueva pregunta...');
-//         game.currentQuestion = null;
-//         startQuestionRound(game, io); // Start new question if no one answers
-//       }, 30000);
-//     } else {
-//       console.error('No se pudo obtener una pregunta');
-//     }
-//   } catch (error) {
-//     console.error('Error en startQuestionRound:', error);
-//   }
-//   console.log("finalizando starquestionround");
-// }
-
 io.on("connection", (socket) => {
   registerHandler(socket);
   loginHandler(socket);

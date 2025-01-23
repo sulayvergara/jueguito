@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100;300;400&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  scroll-behavior: smooth;
+  color: #f5f5f5;
+  min-height: 100vh;
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 300 !important;
+}
+
+button,
+input[type='submit'],
+.button,
+.button-primary {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 300;
+  font-size: 1.5rem;
+}
+
+.background {
+  background-image: url('../assets/img/bg.webp');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.background-overlay {
+  background-color: #1b647abb;
+  background-blend-mode: darken;
+  min-height: 100vh;
+}
+
+.header {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.header h1 {
+  padding: 1rem 0;
+  font-size: 2.25rem;
+  margin: 0 auto;
+}
+
+.header .logo {
+  margin: 0 auto;
+}
+
+.header .logo a {
+  display: flex;
+  text-decoration: none;
+}
+
+.header .logo img {
+  padding: 1rem 0;
+  width: 65px;
+  height: 65px;
+}
+
+.header .logo h1 {
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  font-size: 3.5rem;
+  font-weight: 100;
+  color: rgb(218, 26, 26);
+}
+
+.panels {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.panel {
+  padding: 1.5rem;
+  margin: 1.5rem 2rem;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 1em;
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.panel.main-menu {
+  max-width: 600px;
+  margin-top: 10vh;
+  width: 100%;
+}
+
+.panel.main-menu button {
+  width: 100%;
+}
+
+.panel.main-menu button:not(:first-of-type) {
+  margin-top: 2rem;
+}
+
+.button {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #f5f5f5;
+}
+
+.button:hover,
+.button:focus {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #f5f5f5;
+}
+
+.button-primary {
+  color: #000 !important;
+  font-weight: 400 !important;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.hidden {
+  display: none;
+}

@@ -76,12 +76,19 @@ document.getElementById('show-login').addEventListener('click', () => {
 // Socket.IO event handlers for authentication
 
 socket.on('loginSuccess', (usuario) => {
-    loginContainer.style.display = 'none';
-    
-    document.getElementById('game-container').style.display = 'block';
-    console.log('User data received:', usuario);
-    document.getElementById('game-status').textContent = `Bienvenido, ${usuario.nombre}  ${usuario.apellido}!`;
-    window.location.href = './menu.html';
+    console.log('Datos del usuario:', usuario);
+
+    // Mostrar mensaje de bienvenida
+    document.getElementById('game-status').textContent = `Bienvenido, ${usuario.nombre} ${usuario.apellido}!`;
+
+    // Validar el rol y redirigir según corresponda
+    if (usuario.rol === 'profesor') {
+        window.location.href = './menuMaestro.html'; // Redirige al menú del profesor
+    } else if (usuario.rol === 'estudiante') {
+        window.location.href = './menu.html'; // Redirige al menú del estudiante
+    } else {
+        alert('Rol desconocido. Por favor, contacte al administrador.');
+    }
 });
 
 socket.on('registerSuccess', () => {

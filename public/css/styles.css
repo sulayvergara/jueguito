@@ -15,25 +15,6 @@ body {
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-  /* Estilo específico para el selector */
-  #reg-rol {
-    background-color: #fff;
-    color: #333;
-    cursor: pointer;
-    text-align: center;
-    padding: 8px;
-    margin-bottom: 10px;
-
-  }
-
-   /*Agregar un icono de flecha para el selector 
-  #reg-rol {
-    background-image: url('data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjY2NjIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij4gPHBhdGggZD0iTTEuMzU0LjI5OEwwIDEuNjUybDggOGw4LThsLTEuMzU0LTEuMzU0TDggNi4zNDZ6Ij48L3BhdGg+PC9zdmc+');
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 10px 10px;
-  }*/
-
 input, button {
     display: block;
     width: 100%;

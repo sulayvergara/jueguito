@@ -31,7 +31,8 @@ const loginHandler = (socket) => {
                     id: user._id,
                     nombre: user.nombre,
                     email: user.email,
-                    apellido: user.apellido
+                    apellido: user.apellido,
+                    rol: user.rol
                 });
             } else {
                 socket.emit('loginError', 'Contraseña incorrecta');
