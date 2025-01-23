@@ -113,6 +113,7 @@
       });
       socket.on('showQuestion', (preguntaData) => {
         console.log("Pregunta recibida en el cliente:", preguntaData);
+        
         if (state.gameState === gameStates.gameQuestion) {
           console.log("Estado actual es gameQuestion, mostrando modal...");
           showQuizModal(preguntaData);

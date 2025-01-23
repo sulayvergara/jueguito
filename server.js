@@ -153,20 +153,11 @@ const letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
 //obtencion de preguntas de la base
 async function obtenerPreguntaAleatoria() {
   try {
-    console.log("llamando funcion obtenerpregunta server.js");
-    // Importamos directamente el controlador en lugar de las rutas
     const controller = require("./components/preguntas/controller");
-    
-    console.log('Ejecutando consulta de preguntas...');
-    // Llamamos directamente a la función del controlador
     const preguntasData = await controller.obtenerPreguntas();
     
-    console.log("finalizando funcion obtenerpregunta");
-    
     if (preguntasData && preguntasData.length > 0) {
-      console.log('Total de preguntas disponibles:', preguntasData.length);
       const randomIndex = Math.floor(Math.random() * preguntasData.length);
-      console.log('Pregunta seleccionada:', preguntasData[randomIndex]);
       return preguntasData[randomIndex];
     }
     
@@ -260,7 +251,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("clickOnEnemyGrid", ({ x, y }) => {
+  /*socket.on("clickOnEnemyGrid", ({ x, y }) => {
     if (thisGame.gameState === gameStates.gameRunning) {
       y = letters.indexOf(y);
 
@@ -331,6 +322,104 @@ io.on("connection", (socket) => {
       socket.emit("yourTurn", false);
       socket.broadcast.to(state.gameId).emit("yourTurn", true);
     }
+  });*/
+
+  socket.on("clickOnEnemyGrid", ({ x, y }) => {
+    // Asegurarse de que el juego esté en la etapa correcta
+    if (thisGame.gameState !== gameStates.gameRunning) return;
+
+    // Verificar si es el turno del jugador actual
+    if (thisGame.currentTurn !== state.playerId) {
+        socket.emit("message", "No es tu turno para disparar.");
+        return;
+    }
+
+    // Convertir coordenada de letra (y) a índice numérico
+    y = letters.indexOf(y);
+
+    // Identificar al jugador enemigo
+    const otherPlayerId = thisGame.players.filter((player) => {
+        return player.id !== state.playerId;
+    })[0].id;
+
+    // Obtener el valor actual de la celda del tablero enemigo
+    const currentCellValue = thisGame[`${otherPlayerId}_grid`][y][x];
+
+    // Si la celda ya fue atacada, notificar al jugador
+    if (currentCellValue === 2 || currentCellValue === 3) {
+        socket.emit("message", `Ya has disparado a esa posición. Intenta otra.`);
+        return;
+    }
+
+    // Manejar disparos en agua
+    if (currentCellValue === 0) {
+        thisGame[`${otherPlayerId}_grid`][y][x] = 2; // Marcar como agua en el tablero enemigo
+        state.otherPlayerGrid[y][x] = 2; // Actualizar la vista del jugador
+        socket.emit("message", `¡Has dado en el agua!`);
+        socket.broadcast
+            .to(state.gameId)
+            .emit("message", `El otro jugador falló el disparo.`);
+    }
+    // Manejar disparos en un barco
+    else if (currentCellValue === 1) {
+        thisGame[`${otherPlayerId}_grid`][y][x] = 3; // Marcar como golpe en el tablero enemigo
+        state.otherPlayerGrid[y][x] = 3; // Actualizar la vista del jugador
+        thisGame[`${otherPlayerId}_shipsLost`]++; // Incrementar los barcos perdidos del enemigo
+        socket.emit(
+            "message",
+            `¡Has golpeado un barco enemigo! ¡Buen trabajo!`
+        );
+        socket.broadcast
+            .to(state.gameId)
+            .emit(
+                "message",
+                `¡Oh no! El otro jugador golpeó uno de tus barcos.`
+            );
+
+        // Verificar si el enemigo perdió todos sus barcos
+        if (thisGame[`${otherPlayerId}_shipsLost`] >= 10) {
+            socket.emit("updateGrid", {
+                gridToUpdate: "enemyGrid",
+                data: state.otherPlayerGrid,
+            });
+            socket.broadcast.to(state.gameId).emit("updateGrid", {
+                gridToUpdate: "friendlyGrid",
+                data: thisGame[`${otherPlayerId}_grid`],
+            });
+
+            thisGame.gameState = gameStates.gameOver; // Cambiar el estado del juego a terminado
+            io.to(state.gameId).emit("changeGameState", thisGame.gameState);
+            io.to(state.gameId).emit(
+                "message",
+                `${state.playerName} ganó el juego. ¡Felicidades!`
+            );
+            return;
+        }
+    }
+
+    // Actualizar las cuadrículas de ambos jugadores
+    socket.emit("updateGrid", {
+        gridToUpdate: "enemyGrid",
+        data: state.otherPlayerGrid,
+    });
+    socket.broadcast.to(state.gameId).emit("updateGrid", {
+        gridToUpdate: "friendlyGrid",
+        data: thisGame[`${otherPlayerId}_grid`],
+    });
+
+    // Alternar el turno al otro jugador
+    const nextPlayerId = thisGame.players.filter(
+        (player) => player.id !== state.playerId
+    )[0].id;
+    thisGame.currentTurn = nextPlayerId; // Actualizar quién tiene el turno
+    io.to(state.gameId).emit(
+        "message",
+        `Es el turno de ${thisGame.players.find(player => player.id === nextPlayerId).name}`
+    );
+
+    // Notificar a los clientes sobre el turno
+    socket.emit("yourTurn", false); // Jugador actual termina su turno
+    socket.broadcast.to(state.gameId).emit("yourTurn", true); // Turno para el siguiente jugador
   });
 
   socket.on("clickOnFriendlyGrid", ({ x, y }) => {
@@ -394,110 +483,73 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("answerQuestion", ({ playerId, isCorrect }) => {
+    if (isCorrect) {
+        thisGame.currentTurn = playerId; // Asignar turno al jugador que respondió bien
+        io.to(state.gameId).emit("message", `${state.players[playerId].name} answered correctly and will shoot first!`);
+        io.to(state.gameId).emit("yourTurn", playerId); // Notificar al jugador que es su turno
+    } else {
+        socket.emit("message", "Incorrect answer. No turn advantage granted.");
+    }
+  });
+
   //socket de preguntas
   socket.on('gameQuestion', async () => {
-    console.log("socket.on gameQuestion de server.js ");
     if (thisGame.gameState === gameStates.gameQuestion) {
-        console.log("se activa socket de gamequestion de server");
-        try {
-          const question = await obtenerPreguntaAleatoria();
-          console.log('Pregunta obtenida para mostrar:', question);
-          if (question) {
-            console.log('Emitiendo pregunta al cliente...');
-            socket.emit('showQuestion', question);
-            
-            console.log('Iniciando temporizador de 30 segundos');
-            // Start 30 second timer
-            thisGame.questionTimer = setTimeout(() => {
-              console.log('Tiempo agotado para la pregunta. Obteniendo nueva pregunta...');
-              socket.emit("changeGameState",thisGame.gameState);
-            }, 30000);
-          } else {
-            console.error('No se pudo obtener una pregunta');
-          }
-        } catch (error) {
-          console.error('Error en startQuestionRound:', error);
-        }
-        console.log("finalizando starquestionround");
-      }
-        // if (pregunta) {
-
-        //     //io.to(state.gameId).emit('showQuestion', pregunta);
-        //     // Iniciar temporizador de 30 segundos para la pregunta
-        //     thisGame.questionTimer = setTimeout(async () => {
-        //         if (thisGame.gameState === gameStates.gameQuestion) {
-        //             const nuevaPregunta = await obtenerPreguntaAleatoria();
-        //             io.to(state.gameId).emit('showQuestion', nuevaPregunta);
-        //         }
-        //     }, 30000);
-        // }
-    });
-//});
-
-socket.on('submitAnswer', async ({ respuesta, preguntaId }) => {
-  if (thisGame.gameState === gameStates.gameQuestion && thisGame.currentQuestion) {
       try {
-          console.log('Respuesta recibida:', respuesta);
-          console.log('Pregunta actual:', thisGame.currentQuestion);
-          // Verificar si la respuesta es correcta (comparando con el campo 'answer' de la pregunta)
-          if (thisGame.currentQuestion._id.toString() === preguntaId && 
-              thisGame.currentQuestion.answer === respuesta) {
-              
-              // Detener el temporizador de la pregunta
-              clearTimeout(thisGame.questionTimer);
-              console.log("respuesta correcta");
-              // Cambiar el estado del juego a gameRunning
-              // thisGame.gameState = gameStates.gameRunning;
-              // console.log("cambio de juegorunning");
-              // Establecer 3 disparos para el jugador que respondió correctamente
-              // thisGame.currentPlayerShots = 3;
-              
-              // Dar el turno al jugador que respondió correctamente
-              socket.emit('yourTurn', true);
-              socket.broadcast.to(state.gameId).emit('yourTurn', false);
-              
-              // Ocultar el modal de preguntas
-              io.to(state.gameId).emit('hideQuizModal');
-              // Notificar el cambio de estado del juego
-              io.to(state.gameId).emit('changeGameState', thisGame.gameState);
-              io.to(state.gameId).emit('message', 
-                  `${state.playerName} respondió correctamente y obtiene 3 disparos!`);
-              }else{
-                socket.emit("wrongAnser")
-                io.to(state.gameId).emit('message',
-                  `${state.playerName} respondió incorrectamente. ¡Sigue intentando!`);
-              }
-            } catch (error) {
-              console.error('Error validando respuesta:', error);
-            }
-          } else{
-              console.log("No hay pregunta actual o el estado no es correcto")  
-          }
-              thisGame.gameState = gameStates.gameRunning;
-              socket.emit("changeGameState", thisGame.gameState);
-              io.to(state.gameId).emit(
-                "message",
-                `${state.playerName} Hora de disparar!`
-              );
-              // Configurar el manejador para contar los disparos
-          //     const shotHandler = () => {
-          //         thisGame.currentPlayerShots--;
-          //         if (thisGame.currentPlayerShots === 0) {
-          //             // Cuando se acaban los disparos, volver al estado de preguntas
-          //             thisGame.gameState = gameStates.gameQuestion;
-          //             io.to(state.gameId).emit('changeGameState', thisGame.gameState);
-          //             startQuestionRound(thisGame, io);
-          //         }
-          //     };
-              
-          //     // Escuchar los disparos del jugador
-          //     socket.on('shotFired', shotHandler);
-          // } else {
-          //     // Si la respuesta es incorrecta
-          //     socket.emit('wrongAnswer');
-          //     io.to(state.gameId).emit('message', 
-          //         `${state.playerName} respondió incorrectamente. ¡Sigue intentando!`);
-});
+        const question = await obtenerPreguntaAleatoria();
+        
+        if (question) {
+          // Explicitly set the current question in the game
+          thisGame.currentQuestion = question;
+          
+          socket.emit('showQuestion', question);
+          
+          // Start 30 second timer
+          thisGame.questionTimer = setTimeout(() => {
+            // If no answer within 30 seconds, move to next question
+            thisGame.currentQuestion = null;
+            socket.emit('timeExpired');
+          }, 30000);
+        } else {
+          console.error('No se pudo obtener una pregunta');
+        }
+      } catch (error) {
+        console.error('Error en gameQuestion:', error);
+      }
+    }
+  });
+
+  socket.on('submitAnswer', async ({ respuesta, preguntaId }) => {
+    thisGame.currentTurn = null;
+
+    if (thisGame.gameState === gameStates.gameQuestion) {
+      const currentQuestion = thisGame.currentQuestion;
+      
+      if (currentQuestion && 
+          currentQuestion._id.toString() === preguntaId && 
+          currentQuestion.answer === respuesta) {
+        
+        // Clear the timer
+        if (thisGame.questionTimer) {
+          clearTimeout(thisGame.questionTimer);
+        }
+        
+        // Change game state
+        thisGame.gameState = gameStates.gameRunning;
+        
+        // Notify players
+        io.to(state.gameId).emit('changeGameState', thisGame.gameState);
+        io.to(state.gameId).emit('correctAnswer', { playerName: state.playerName });
+        
+        thisGame.currentTurn = state.playerId; // El ID del jugador que respondió correctamente
+        io.to(state.gameId).emit('updateTurn', { currentTurn: thisGame.currentTurn });
+      
+      } else {
+        socket.emit('wrongAnswer');
+      }
+    }
+  });
   
   // Handle chat messages between players
   socket.on("chatMessage", ({ playerName, message }) => {
