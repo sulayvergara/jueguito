@@ -1,4 +1,5 @@
 const userController = require('../../components/usuario/controller');
+const preguntasxd = require('../../components/preguntas/controller')
 
 const registerHandler = (socket) => {
     socket.on('register', async (userData) => {
@@ -43,6 +44,8 @@ const loginHandler = (socket) => {
         }
     });
 };
+
+
 
 
 module.exports = { registerHandler, loginHandler };

@@ -1,12 +1,12 @@
 {
-    "name": "taller_04",
+    "name": "proyecto",
     "version": "1.0.0",
     "main": "server.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "nodemon server.js --exec babel-node"
     },
-    "author": "Jose Alverca",
+    "author": "Jose Alverca y asociados",
     "license": "GPL-3.0",
     "description": "",
     "dependencies": {
