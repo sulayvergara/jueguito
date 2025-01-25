@@ -32,15 +32,18 @@
             <div class="panel main-menu">
               <div class="tab" id="main-tab">
                 <h5 class="text-center"><strong>Menu de Maestros</strong></h5>
-                <button class="button-primary tab-trigger" id="create-btn" onclick="">Estudiantes</button>
-                <button class="button-primary tab-trigger" id="join-btn" data-targets="preguntas-tab" onclick="mostrarFormulario()">Gestionar Preguntas</button>
+                <button class="button-primary tab-trigger" id="estudiantes-btn" onclick="">Estudiantes</button>
+                <button class="button-primary tab-trigger" id="question-btn" data-targets="preguntas-tab" onclick="mostrarFormulario()">Gestionar Preguntas</button>
               </div>
+
               <div class="tab hidden" id="estudiantes-tab">
                 <h5 class="text-center"><strong>Estudiantes</strong></h5>
                 
               </div>
+
               <div class="tab hidden" id="preguntas-tab">
                 <h5 class="text-center"><strong>Gestionar Preguntas</strong></h5>
+                  <button id="btn-new" class="button tab-trigger" class="btn-new" onclick="FormularioNuevaPregunta()">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -76,15 +79,16 @@
                         <label>Correcta</label>
                     </div>
 
-                    <button onclick="crearPregunta()">Crear Pregunta</button>
+                    <button class="button tab-trigger" onclick="crearPregunta()">Crear Pregunta</button>
                     <div id="error" class="error"></div>
                 </div>
 
                 <div id="listado">
                     <h2>Preguntas Existentes</h2>
-                    <div id="questionList"></div>
+                    <div id="question-container"></div>
                 </div>
-                <button class="button tab-trigger" data-targets="main-tab">Regresar al menu</button>
+
+                <button class="button tab-trigger" data-targets="main-tab" onclick="mostrarMenu()">Regresar al menu</button>
               </div>
             </div>
           </div>
@@ -92,6 +96,8 @@
       </main>
     </div>
   </div>
-  <script src="./js/mainM.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/preguntas.js"></script>
+  <script src="/js/socket.js"></script>
 </body>
 </html>

@@ -6,7 +6,7 @@ const { Server: WebsocketServer } = require("socket.io");
 const config = require("./network/config");
 const routes = require("./network/routes");
 const db = require("./network/db");
-const { registerHandler, loginHandler } = require("./public/js/socket");
+const { registerHandler, loginHandler, questionsHandler } = require("./public/js/socket");
 
 var app = express();
 const server = http.createServer(app);
@@ -171,6 +171,8 @@ async function obtenerPreguntaAleatoria() {
 io.on("connection", (socket) => {
   registerHandler(socket);
   loginHandler(socket);
+  questionsHandler(socket);
+
   // The state for this individual session = player
   const state = {
     gameId: null,

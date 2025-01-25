@@ -1,5 +1,5 @@
 const userController = require('../../components/usuario/controller');
-const preguntasxd = require('../../components/preguntas/controller')
+const questionsController = require('../../components/preguntas/controller');
 
 const registerHandler = (socket) => {
     socket.on('register', async (userData) => {
@@ -45,7 +45,18 @@ const loginHandler = (socket) => {
     });
 };
 
+const questionsHandler = (socket) => {
+    socket.on('getQuestions', async () => {
+        console.log('Solicitud de obtener preguntas recibida');
+        try {
+            const questions = await questionsController.obtenerPreguntas(); // Método para obtener preguntas
+            socket.emit('questionsSuccess', { message: 'Preguntas obtenidas con éxito', questions });
+        } catch (error) {
+            console.error('Error al obtener preguntas:', error);
+            socket.emit('questionsError', { message: 'Error al obtener preguntas' });
+        }
+    });
+};
 
 
-
-module.exports = { registerHandler, loginHandler };
+module.exports = { registerHandler, loginHandler , questionsHandler};
