@@ -45,6 +45,19 @@ const loginHandler = (socket) => {
     });
 };
 
+const addquestionHandler = (socket) => {
+    socket.on('addQuestion', async (question) => {
+        console.log('Datos de registro recibidos:', question);
+        try {
+            const newQuestions = await questionsController.ingresarPregunta(question);
+            socket.emit('registerSuccess', { message: 'Pregunta agregada con éxito', pregunta: newQuestions });
+        } catch (error) {
+            console.error('Error al registrar pregunta:', error);
+            socket.emit('registerError', { message: 'Error al registrar pregunta' });
+        }
+    });
+};
+
 const questionsHandler = (socket) => {
     socket.on('getQuestions', async () => {
         console.log('Solicitud de obtener preguntas recibida');
@@ -58,5 +71,19 @@ const questionsHandler = (socket) => {
     });
 };
 
+const deletequestionHandler = (socket) => {
+    socket.on('deleteQuestion', async (id) => {
+        console.log('Datos de Eliminacion recibidos:', id);
+        try {
+            const delQuestions = await questionsController.eliminarPregunta(id);
+            socket.emit('deleteSuccess', { message: 'Pregunta eliminada con éxito', id : delQuestions});
+        } catch (error) {
+            console.error('Error al eliminar pregunta:', error);
+            socket.emit('deleteError', { message: 'Error al eliminar pregunta' });
+        }
+    });
+};
 
-module.exports = { registerHandler, loginHandler , questionsHandler};
+
+
+module.exports = { registerHandler, loginHandler , questionsHandler, addquestionHandler, deletequestionHandler};
