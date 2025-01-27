@@ -28,7 +28,7 @@ class Partida {
     this.turno = jugador1; // El turno inicial es del jugador 1
     this.tableros = {}; // Almacena los tableros de ambos jugadores
     this.estado = "esperando"; // Estado inicial de la partida
-    this.countdown = 5; // 5 seconds countdown to start
+    this.countdown = 3; // 5 seconds countdown to start
     this.currentQuestion = null;
     this.currentPlayerShots = null;
     this.questionTimer = null;
@@ -133,7 +133,7 @@ app.post("/games", async(req, res) => {
       const game = new Game(gameId, `${playerName}'s Game`, [player]);
       
       // Guardar en MongoDB
-      await gameService.createGame(gameId, player);
+      //await gameService.createGame(gameId, player);
       
       games = { ...games, [gameId]: game };
       console.log("All games currently live: ", JSON.stringify(games));
@@ -167,42 +167,142 @@ const letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
 
 //almacen de preguntas usadas
 let preguntasUsadas = [];
+const gameQuestionStates = {};
 
-//obtencion de preguntas de la base
-async function obtenerPreguntaAleatoria() {
-  try {
-    const controller = require("./components/preguntas/controller");
-    const preguntasData = await controller.obtenerPreguntas();
-    
-    if (!preguntasData || !preguntasData.length) {
-      throw new Error('No se encontraron preguntas');
+  //obtencion de preguntas de la base
+  async function obtenerPreguntaAleatoria() {
+    try {
+      const controller = require("./components/preguntas/controller");
+      const preguntasData = await controller.obtenerPreguntas();
+      
+      if (!preguntasData || !preguntasData.length) {
+        throw new Error('No se encontraron preguntas');
+      }
+  
+      // Si ya usamos todas las preguntas, reiniciamos el array
+      if (preguntasUsadas.length === preguntasData.length) {
+        preguntasUsadas = [];
+        console.log('Se han usado todas las preguntas. Reiniciando ciclo.');
+      }
+  
+      // Filtramos las preguntas que aún no se han usado
+      const preguntasDisponibles = preguntasData.filter(
+        pregunta => !preguntasUsadas.includes(pregunta.id)
+      );
+  
+      // Seleccionamos una pregunta aleatoria de las disponibles
+      const indiceAleatorio = Math.floor(Math.random() * preguntasDisponibles.length);
+      const preguntaSeleccionada = preguntasDisponibles[indiceAleatorio];
+  
+      // Agregamos el ID de la pregunta seleccionada al array de usadas
+      preguntasUsadas.push(preguntaSeleccionada.id);
+  
+      return preguntaSeleccionada;
+  
+    } catch (error) {
+      console.error('Error al obtener pregunta:', error);
+      return null;
     }
-
-    // Si ya usamos todas las preguntas, reiniciamos el array
-    if (preguntasUsadas.length === preguntasData.length) {
-      preguntasUsadas = [];
-      console.log('Se han usado todas las preguntas. Reiniciando ciclo.');
-    }
-
-    // Filtramos las preguntas que aún no se han usado
-    const preguntasDisponibles = preguntasData.filter(
-      pregunta => !preguntasUsadas.includes(pregunta.id)
-    );
-
-    // Seleccionamos una pregunta aleatoria de las disponibles
-    const indiceAleatorio = Math.floor(Math.random() * preguntasDisponibles.length);
-    const preguntaSeleccionada = preguntasDisponibles[indiceAleatorio];
-
-    // Agregamos el ID de la pregunta seleccionada al array de usadas
-    preguntasUsadas.push(preguntaSeleccionada.id);
-
-    return preguntaSeleccionada;
-
-  } catch (error) {
-    console.error('Error al obtener pregunta:', error);
-    return null;
   }
-}
+
+  function handleQuestionTimeout(gameId, io) {
+    const game = games[gameId];
+    if (!game) return;
+
+    clearTimeout(gameQuestionStates[gameId]?.timer);
+    game.currentQuestion = null;
+    gameQuestionStates[gameId].wrongAnswers.clear();
+    
+    io.to(gameId).emit('timeExpired');
+    io.to(gameId).emit('message', 'Tiempo agotado, ¡siguiente pregunta!');
+    
+    // Iniciar nueva pregunta después de un breve retraso
+    setTimeout(() => {
+      startNewQuestion(gameId, io);
+    }, 10000);
+  }
+
+  // Función para iniciar una nueva pregunta
+  async function startNewQuestion(gameId, io) {
+    const game = games[gameId];
+    if (!game) return;
+  
+    // Limpiar el temporizador anterior si existe
+    if (gameQuestionStates[gameId]?.timer) {
+      clearTimeout(gameQuestionStates[gameId].timer);
+    }
+  
+    // Inicializar o resetear el estado de las preguntas para este juego
+    if (!gameQuestionStates[gameId]) {
+      gameQuestionStates[gameId] = {
+        timer: null,
+        wrongAnswers: new Set()
+      };
+    }
+    gameQuestionStates[gameId].wrongAnswers.clear();
+  
+    try {
+      const question = await obtenerPreguntaAleatoria();
+      if (!question) {
+        throw new Error('No se pudo obtener una pregunta');
+      }
+  
+      game.currentQuestion = question;
+      io.to(gameId).emit('showQuestion', question);
+      
+      // Iniciar nuevo temporizador
+      gameQuestionStates[gameId].timer = setTimeout(() => {
+        handleQuestionTimeout(gameId, io);
+      }, 30000);
+  
+    } catch (error) {
+      console.error('Error al iniciar nueva pregunta:', error);
+      handleQuestionTimeout(gameId, io);
+    }
+  }
+
+  // Función para manejar la respuesta de un jugador
+  function handlePlayerAnswer(gameId, playerId, playerName, answer, io, socket) {
+    const game = games[gameId];
+    if (!game || !game.currentQuestion) return;
+  
+    const isCorrect = game.currentQuestion.answer === answer;
+  
+    if (isCorrect) {
+      // Limpiar el temporizador y estado
+      clearTimeout(gameQuestionStates[gameId]?.timer);
+      gameQuestionStates[gameId].wrongAnswers.clear();
+      game.currentQuestion = null;
+  
+      // Configurar estado del juego y disparos
+      game.gameState = gameStates.gameRunning;
+      game.currentPlayerShots = 3;
+      game.currentTurn = playerId;
+  
+      // Notificar a los jugadores
+      socket.emit("message", `Obtienes ${game.currentPlayerShots} disparos.`);
+      io.to(gameId).emit('changeGameState', game.gameState);
+      io.to(gameId).emit('correctAnswer', { playerName, playerId });
+      io.to(gameId).emit("message", "¡A disparar!");
+  
+    } else {
+      gameQuestionStates[gameId].wrongAnswers.add(playerId);
+  
+      if (gameQuestionStates[gameId].wrongAnswers.size >= 2) {
+        // Ambos jugadores respondieron incorrectamente
+        clearTimeout(gameQuestionStates[gameId].timer);
+        gameQuestionStates[gameId].wrongAnswers.clear();
+  
+        io.to(gameId).emit('message', '¡Ambos jugadores fallaron! Nueva pregunta...');
+  
+        setTimeout(() => {
+          startNewQuestion(gameId, io);
+        }, 1500);
+      } else {
+        socket.emit('message', 'Respuesta incorrecta, ¡espera a que el otro jugador responda!');
+      }
+    }
+  }
 
 io.on("connection", (socket) => {
   registerHandler(socket);
@@ -454,106 +554,22 @@ io.on("connection", (socket) => {
 
   //socket de preguntas
   socket.on('gameQuestion', async () => {
-    if (thisGame.gameState === gameStates.gameQuestion) {
-      try {
-        const question = await obtenerPreguntaAleatoria();
-        
-        if (question) {
-          // Explicitly set the current question in the game
-          thisGame.currentQuestion = question;
-          
-          io.to(state.gameId).emit('showQuestion', question);
-          
-          // Start 30 second timer
-          thisGame.questionTimer = setTimeout(() => {
-            // If no answer within 30 seconds, move to next question
-            thisGame.currentQuestion = null;
-            socket.emit('message', '30 SEGUNDOS ACABADOS');
-            socket.emit('timeExpired');
-          }, 30000);
-        } else {
-          console.error('No se pudo obtener una pregunta');
-        }
-      } catch (error) {
-        console.error('Error en gameQuestion:', error);
-      }
+    if (thisGame && thisGame.gameState === gameStates.gameQuestion) {
+      await startNewQuestion(thisGame.id, io);
     }
   });
 
   socket.on('submitAnswer', async ({ respuesta, preguntaId }) => {
-    try {
-      console.log('Datos recibidos:', { respuesta, preguntaId });
-      thisGame.currentTurn = null;
+    if (!thisGame) return;
     
-      const currentQuestion = thisGame.currentQuestion;
-    
-      // Inicializar el conjunto de respuestas incorrectas si no existe
-      if (!thisGame.wrongAnswers) {
-        thisGame.wrongAnswers = new Set();
-      }
-    
-      // Comparación de respuesta
-      if (currentQuestion && currentQuestion.answer === respuesta) {
-        console.log('¡Respuesta correcta!');
-        // Registrar respuesta correcta en MongoDB
-        await gameService.recordQuestion(state.gameId, state.playerId, true);
-        thisGame.currentPlayerShots = 3;
-        socket.emit("message", `Obtienes ${thisGame.currentPlayerShots} disparos.`);
-    
-        // Limpiar temporizador
-        if (thisGame.questionTimer) {
-          clearTimeout(thisGame.questionTimer);
-        }
-        // Reiniciar seguimiento de respuestas incorrectas
-        thisGame.wrongAnswers.clear();
-    
-        // Cambiar el estado del juego
-        thisGame.gameState = gameStates.gameRunning;
-    
-        // Notificar a los jugadores
-        io.to(state.gameId).emit('changeGameState', thisGame.gameState);
-        io.to(state.gameId).emit('correctAnswer', { 
-          playerName: state.playerName,
-          playerId: state.playerId 
-        });
-        io.to(state.gameId).emit("message", "Disparense");
-    
-        // Asignar turno al jugador que respondió correctamente
-        thisGame.currentTurn = state.playerId;
-        console.log('Turno asignado a:', {
-          playerId: state.playerId,
-          playerName: state.playerName
-        });
-        socket.emit("yourTurn", true);
-    
-      } else {
-        console.log('Respuesta incorrecta o pregunta no válida', {
-          receivedAnswer: respuesta,
-          expectedAnswer: currentQuestion?.answer
-        });
-    
-        // Agregar al jugador al conjunto de respuestas incorrectas
-        thisGame.wrongAnswers.add(state.playerId);
-    
-        // Verificar si ambos jugadores han respondido incorrectamente
-        if (thisGame.wrongAnswers.size >= 2) {
-          console.log('Ambos jugadores respondieron incorrectamente');
-          
-          // Reiniciar el seguimiento de respuestas incorrectas
-          thisGame.wrongAnswers.clear();
-    
-          // Emitir evento de respuestas incorrectas
-          socket.emit('message','Han contestado incorrectamente, ¡intenten de nuevo!')
-    
-          // Iniciar una nueva pregunta
-          io.to(state.gameId).emit('SaltoPreguntaCliente');
-        } else {
-          console.log("Respuesta incorrecta: esperando al otro jugador.");
-        }
-      }
-    } catch (error) {
-      console.error("Error processing answer:", error);
-    }
+    handlePlayerAnswer(
+      thisGame.id,
+      state.playerId,
+      state.playerName,
+      respuesta,
+      io,
+      socket
+    );
   });
   
 
@@ -566,9 +582,9 @@ io.on("connection", (socket) => {
   });
   
   socket.on('SaltoPreguntaServer', () => {
-        // Notificar a los jugadores
-    io.to(state.gameId).emit('message', 'Tiempo agotado, ¡siguiente pregunta!');
-    socket.emit('SaltoPreguntaCliente')
+    if (thisGame) {
+      startNewQuestion(thisGame.id, io);
+    }
   });
 
   // Send messages when a player leaves the game

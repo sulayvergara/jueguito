@@ -1,5 +1,5 @@
 const config = {
-    PORT: 3000,
+    PORT: 3001,
     DB_URL: 'mongodb+srv://sulayvergara:STUV18ss@cluster0.0pmo6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 }
 

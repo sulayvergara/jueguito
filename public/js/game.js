@@ -54,7 +54,6 @@
     PlayerGridData: initialGridData,
     currentRound: 0,
     yourTurn: false,
-    
   };
 
   // Prohibit modification of state
@@ -113,13 +112,8 @@
         }
       });
       socket.on('showQuestion', (preguntaData) => {
-        console.log("Pregunta recibida en el cliente:", preguntaData);
-        
         if (state.gameState === gameStates.gameQuestion) {
-          console.log("Estado actual es gameQuestion, mostrando modal...");
           showQuizModal(preguntaData);
-        }else{
-          console.log("Estado actual no es gameQuestion:", state.gameState);
         }
       });
       
@@ -155,9 +149,15 @@
               }
           }
       });
+
+      socket.on('timeExpired', () => {
+        hideQuizModal();
+      });
+
       socket.on('hideQuizModal', () => {
         hideQuizModal();
       });
+      
       socket.on("updateGrid", ({ gridToUpdate, data }) => {
         switch (gridToUpdate) {
           case "enemyGrid":
@@ -440,132 +440,134 @@
 
     return gridArray;
   }
-  // funcion de preguntas
-  function showQuizModal(preguntaData) {
+
+  // Estado global para el temporizador del cliente
+  const quizState = {
+    timer: null,
+    timeLeft: 30
+  };
+
+   // Función para mostrar el modal de preguntas
+   function showQuizModal(preguntaData) {
     if (!preguntaData) {
       console.error('No se recibieron datos de pregunta válidos');
       return;
     }
-    console.log("Mostrando modal con pregunta:", preguntaData);
     
-    
-    // Get DOM elements
     const quizContainer = document.getElementById('quiz-container');
     const questionText = document.getElementById('question-text');
     const optionsContainer = document.getElementById('options-container');
     const timerElement = document.querySelector('.timer');
     
-    if (!quizContainer) {
-      console.error('No se encontró el contenedor del quiz');
-      return;
-    }
-    // Validate DOM elements
     if (!quizContainer || !questionText || !optionsContainer || !timerElement) {
       console.error('No se encontraron los elementos necesarios del DOM');
       return;
     }
   
+    resetQuizState(timerElement, optionsContainer);
+    
     try {
-      // Reset UI state
-      optionsContainer.innerHTML = '';
-      timerElement.textContent = '30s';
-      timerElement.classList.remove('warning');
-  
-      // Set question text
-      questionText.textContent = preguntaData.question;
-  
-      // Create option buttons
-      preguntaData.options.forEach((opcion) => {
-        const button = document.createElement('button');
-        button.className = 'option-btn';
-        button.dataset.respuesta = opcion.option; // Usamos la propiedad option del objeto
-        button.textContent = `${opcion.option}) ${opcion.text}`; // Usamos option y text del objeto
-  
-        button.addEventListener('click', function() {
-          // Disable all buttons after selection
-          const buttons = optionsContainer.querySelectorAll('.option-btn');
-          buttons.forEach(btn => btn.disabled = true);
-  
-          // Remove existing selection classes
-          buttons.forEach(btn => btn.classList.remove('selected'));
-          
-          // Add selection to clicked button
-          this.classList.add('selected');
-  
-          // Submit answer
-          socket.emit('submitAnswer', {
-            respuesta: this.dataset.respuesta,
-            preguntaId: preguntaData._id
-          });
-        });
-  
-        optionsContainer.appendChild(button);
-      });
-  
-      // Show quiz container with animation
-      quizContainer.style.display = 'flex';
-      quizContainer.style.opacity = '0';
-      setTimeout(() => {
-        quizContainer.style.opacity = '1';
-      }, 10);
-  
-      // Start timer
-      startQuizTimer();
-  
+      renderQuestion(preguntaData, questionText, optionsContainer);
+      showQuizContainer(quizContainer);
+      startQuizTimer(timerElement);
     } catch (error) {
       console.error('Error al mostrar el modal de preguntas:', error);
     }
   }
+
+
+
+  // Función para resetear el estado del quiz
+  function resetQuizState(timerElement, optionsContainer) {
+    clearQuizTimer();
+    optionsContainer.innerHTML = '';
+    timerElement.textContent = '30s';
+    timerElement.classList.remove('warning');
+    quizState.timeLeft = 30;
+  }
   
-  function startQuizTimer() {
-    let timeLeft = 30;
-    const timerElement = document.querySelector('.timer');
+  function renderQuestion(preguntaData, questionText, optionsContainer) {
+    questionText.textContent = preguntaData.question;
   
-    // Clear any existing timer
-    if (window.quizTimer) {
-      clearInterval(window.quizTimer);
-    }
+    preguntaData.options.forEach((opcion) => {
+      const button = document.createElement('button');
+      button.className = 'option-btn';
+      button.dataset.respuesta = opcion.option;
+      button.textContent = `${opcion.option}) ${opcion.text}`;
   
-    window.quizTimer = setInterval(() => {
-      timeLeft--;
+      button.addEventListener('click', function() {
+        if (!this.disabled) {
+          handleOptionSelection(this, optionsContainer, preguntaData._id);
+        }
+      });
+  
+      optionsContainer.appendChild(button);
+    });
+  }
+  function handleOptionSelection(selectedButton, optionsContainer, preguntaId) {
+    const buttons = optionsContainer.querySelectorAll('.option-btn');
+    buttons.forEach(btn => btn.disabled = true);
+    buttons.forEach(btn => btn.classList.remove('selected'));
+    selectedButton.classList.add('selected');
+  
+    socket.emit('submitAnswer', {
+      respuesta: selectedButton.dataset.respuesta,
+      preguntaId: preguntaId
+    });
+  }
+  function showQuizContainer(quizContainer) {
+    quizContainer.style.display = 'flex';
+    quizContainer.style.opacity = '0';
+    setTimeout(() => {
+      quizContainer.style.opacity = '1';
+    }, 10);
+  }
+  function startQuizTimer(timerElement) {
+    clearQuizTimer();
+  
+    quizState.timer = setInterval(() => {
+      quizState.timeLeft--;
       
       if (timerElement) {
-        timerElement.textContent = `${timeLeft}s`;
+        timerElement.textContent = `${quizState.timeLeft}s`;
         
-        // Add warning class when time is running out
-        if (timeLeft <= 10) {
+        if (quizState.timeLeft <= 10) {
           timerElement.classList.add('warning');
         }
       }
   
-      // Handle timer completion
-      if (timeLeft <= 0) {
-        clearInterval(window.quizTimer);
+      if (quizState.timeLeft <= 0) {
+        clearQuizTimer();
         hideQuizModal();
-        socket.emit('SaltoPreguntaServer');
+        socket.emit('timeExpired');
       }
     }, 1000);
+  }
+
+  function clearQuizTimer() {
+    if (quizState.timer) {
+      clearInterval(quizState.timer);
+      quizState.timer = null;
+    }
   }
 
   function hideQuizModal() {
     const quizContainer = document.getElementById('quiz-container');
     if (quizContainer) {
-        quizContainer.style.opacity = '0';
-        setTimeout(() => {
-            quizContainer.style.display = 'none';
-            // Limpiar el temporizador si existe
-            if (window.quizTimer) {
-                clearInterval(window.quizTimer);
-            }
-            // Restablecer el temporizador visual
-            const timerElement = document.querySelector('.timer');
-            if (timerElement) {
-                timerElement.classList.remove('warning');
-                timerElement.textContent = '30s';
-            }
-        }, 300);
+      quizContainer.style.opacity = '0';
+      setTimeout(() => {
+        quizContainer.style.display = 'none';
+        
+        clearQuizTimer();
+        
+        const timerElement = document.querySelector('.timer');
+        if (timerElement) {
+          timerElement.classList.remove('warning');
+          timerElement.textContent = '30s';
+        }
+      }, 300);
     }
-}
+  }
 
   // Leave Game
   function leaveGame() {
