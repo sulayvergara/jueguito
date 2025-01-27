@@ -129,15 +129,18 @@
         countdownDiv.innerHTML = `<h2>Game starting in: ${count}</h2>`;
         document.body.appendChild(countdownDiv);
       });
+
       socket.on('correctAnswer', (data) => {
         hideQuizModal();
         addConsoleMessage(chatMessagesList, `¡${data.playerName} respondió correctamente!`);
       });
       
-      // socket.on('wrongAnswer', () => {
-      //   // No ocultamos el modal, permitiendo más intentos dentro del tiempo límite
-      //   addConsoleMessage(chatMessagesList, "Respuesta incorrecta, ¡inténtalo de nuevo!");
-      // });
+      socket.on('wrongAnswer', () => {
+        // No ocultamos el modal, permitiendo más intentos dentro del tiempo límite
+        addConsoleMessage(chatMessagesList, "Respuesta incorrecta, ¡inténtalo de nuevo!");
+        socket.emit('gameQuestion')
+
+      });
       socket.on('updateCountdown', (count) => {
           const countdownDiv = document.getElementById('countdown');
           if (countdownDiv) {
@@ -534,7 +537,7 @@
       if (timeLeft <= 0) {
         clearInterval(window.quizTimer);
         hideQuizModal();
-        socket.emit('timeExpired');
+        //socket.emit('timeExpired');
       }
     }, 1000);
   }
