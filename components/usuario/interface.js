@@ -112,4 +112,17 @@ router.delete('/:email', async (req, res) => {
     }
 });
 
+router.get('/getEstudiantes', async (req, res) => {
+    try {
+        const usuario = await controller.getEstudiantes();
+        if (usuario) {
+            res.json(usuario);
+        } else {
+            res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error en el servidor', error: error.message });
+    }
+});
+
 module.exports = router;

@@ -1,4 +1,5 @@
 const questionContainer = document.getElementById('question-container');
+const studentsContainer = document.getElementById('students-container');
 const formulario = document.getElementById('formulario')
 const socket = io(); 
 
@@ -124,6 +125,43 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Hubo un error al cargar las preguntas.');
     });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Cargando estudiantes automáticamente...');
+
+    // Emitir el evento para obtener estudiantes al cargar la página
+    socket.emit('getStudents');
+
+    // Escuchar el resultado exitoso
+    socket.on('studentsSuccess', (data) => {
+        console.log('Estudiantes recibidos:', data.estudiantes);
+        // Renderizar los estudiantes en la página
+        const studentsContainer = document.getElementById('students-container');
+        studentsContainer.innerHTML = ''; // Limpiar contenido anterior
+        data.estudiantes.forEach((estudiantes) => {
+            const studentElement = document.createElement('div');
+            studentElement.classList.add('student');
+
+            // Mostrar el nombre del estudiante
+            const studentName = document.createElement('h3');
+            studentName.textContent = `Nombre: ${estudiantes.nombre}`;
+            studentElement.appendChild(studentName);
+
+            // Mostrar el correo electrónico
+            const studentEmail = document.createElement('p');
+            studentEmail.textContent = `Correo: ${estudiantes.correo}`;
+            studentElement.appendChild(studentEmail);
+            });
+            studentElement.appendChild(deleteButton);
+            studentsContainer.appendChild(studentElement);
+        });
+    });
+    // Escuchar errores
+    socket.on('studentsError', (error) => {
+        console.error('Error al obtener estudiantes:', error.message);
+        alert('Hubo un error al cargar los estudiantes.');
+});
+
 
 socket.on('error', (message) => {
     console.error('Error: ',message);

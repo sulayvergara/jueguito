@@ -46,10 +46,15 @@ async function login(email, clave) {
     }
 }
 
+async function getEstudiantes() {
+    return await storage.getEstudiantes();
+}
+
 module.exports = {
     addUsuario,
     getUsuario,
     updateUsuario,
     deleteUsuario,
     login,
+    getEstudiantes
 };
