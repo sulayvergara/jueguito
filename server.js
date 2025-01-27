@@ -284,7 +284,7 @@ const gameQuestionStates = {};
       io.to(gameId).emit('changeGameState', game.gameState);
       io.to(gameId).emit('correctAnswer', { playerName, playerId });
       io.to(gameId).emit("message", "¡A disparar!");
-  
+      socket.emit("yourTurn", true);
     } else {
       gameQuestionStates[gameId].wrongAnswers.add(playerId);
   
