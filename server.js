@@ -29,10 +29,9 @@ class Partida {
     this.tableros = {}; // Almacena los tableros de ambos jugadores
     this.estado = "esperando"; // Estado inicial de la partida
     this.countdown = 5; // 5 seconds countdown to start
-    this.questionTimer = null;
     this.currentQuestion = null;
     this.currentPlayerShots = null;
-    this.questionAnswered = false;
+    this.questionTimer = null;
   }
 
   unirse(jugador2) {
@@ -439,7 +438,7 @@ io.on("connection", (socket) => {
           // Explicitly set the current question in the game
           thisGame.currentQuestion = question;
           
-          socket.emit('showQuestion', thisGame.currentQuestion);
+          io.to(state.gameId).emit('showQuestion', question);
           
           // Start 30 second timer
           thisGame.questionTimer = setTimeout(() => {
@@ -461,68 +460,84 @@ io.on("connection", (socket) => {
     console.log('Datos recibidos:', { respuesta, preguntaId });
     thisGame.currentTurn = null;
   
-    if (thisGame.gameState === gameStates.gameQuestion) {
-      const currentQuestion = thisGame.currentQuestion;
-      
-      console.log('Pregunta actual:', {
-        question: currentQuestion,
-        id: currentQuestion._id,
-        correctAnswer: currentQuestion.answer
+    const currentQuestion = thisGame.currentQuestion;
+  
+    // Inicializar el conjunto de respuestas incorrectas si no existe
+    if (!thisGame.wrongAnswers) {
+      thisGame.wrongAnswers = new Set();
+    }
+  
+    // Comparación de respuesta
+    if (currentQuestion && currentQuestion.answer === respuesta) {
+      console.log('¡Respuesta correcta!');
+      thisGame.currentPlayerShots = 3;
+      socket.emit("message", `Obtienes ${thisGame.currentPlayerShots} disparos.`);
+  
+      // Limpiar temporizador
+      if (thisGame.questionTimer) {
+        clearTimeout(thisGame.questionTimer);
+      }
+      // Reiniciar seguimiento de respuestas incorrectas
+      thisGame.wrongAnswers.clear();
+  
+      // Cambiar el estado del juego
+      thisGame.gameState = gameStates.gameRunning;
+  
+      // Notificar a los jugadores
+      io.to(state.gameId).emit('changeGameState', thisGame.gameState);
+      io.to(state.gameId).emit('correctAnswer', { 
+        playerName: state.playerName,
+        playerId: state.playerId 
       });
-      console.log('Comparación:', {
-        idsMatch: currentQuestion._id === preguntaId,
-        answerMatch: currentQuestion.answer === respuesta
+      io.to(state.gameId).emit("message", "Disparense");
+  
+      // Asignar turno al jugador que respondió correctamente
+      thisGame.currentTurn = state.playerId;
+      console.log('Turno asignado a:', {
+        playerId: state.playerId,
+        playerName: state.playerName
+      });
+      socket.emit("yourTurn", true);
+  
+    } else {
+      console.log('Respuesta incorrecta o pregunta no válida', {
+        receivedAnswer: respuesta,
+        expectedAnswer: currentQuestion?.answer
       });
   
-      // Modificación: Simplificar la comparación
-      if (currentQuestion && currentQuestion.answer === respuesta) {
-        console.log('¡Respuesta correcta!');
-        thisGame.currentPlayerShots = 3;
-        socket.emit("message", `Obtienes ${thisGame.currentPlayerShots} disparos.`);
-        // Limpiar temporizador
-        if (thisGame.questionTimer) {
-          clearTimeout(thisGame.questionTimer);
-        }
+      // Agregar al jugador al conjunto de respuestas incorrectas
+      thisGame.wrongAnswers.add(state.playerId);
+  
+      // Verificar si ambos jugadores han respondido incorrectamente
+      if (thisGame.wrongAnswers.size >= 2) {
+        console.log('Ambos jugadores respondieron incorrectamente');
         
-        // Cambiar estado del juego
-        thisGame.gameState = gameStates.gameRunning;
-        
-        // Notificar a los jugadores
-        io.to(state.gameId).emit('changeGameState', thisGame.gameState);
-        io.to(state.gameId).emit('correctAnswer', { 
-          playerName: state.playerName,
-          playerId: state.playerId 
-        });
-        io.to(state.gameId).emit(
-          "message",
-          "Disparense"
-        );
-        // Asignar turno al jugador que respondió correctamente
-        thisGame.currentTurn = state.playerId;
-        console.log('Turno asignado a:', {
-          playerId: state.playerId,
-          playerName: state.playerName
-        });
-        socket.emit("yourTurn", true);
-      
+        // Reiniciar el seguimiento de respuestas incorrectas
+        thisGame.wrongAnswers.clear();
+  
+        // Emitir evento de respuestas incorrectas
+        socket.emit('message','Han contestado incorrectamente, ¡intenten de nuevo!')
+  
+        // Iniciar una nueva pregunta
+        io.to(state.gameId).emit('SaltoPreguntaCliente');
       } else {
-        console.log('Respuesta incorrecta o pregunta no válida', {
-          receivedAnswer: respuesta,
-          expectedAnswer: currentQuestion?.answer
-        });
-        socket.emit('wrongAnswer');
+        console.log("Respuesta incorrecta: esperando al otro jugador.");
       }
-    } else {
-      console.log('Estado de juego incorrecto:', thisGame.gameState);
     }
   });
-  
+
   // Handle chat messages between players
   socket.on("chatMessage", ({ playerName, message }) => {
     io.to(state.gameId).emit("chatMessage", {
       playerName,
       message,
     });
+  });
+  
+  socket.on('SaltoPreguntaServer', () => {
+        // Notificar a los jugadores
+    io.to(state.gameId).emit('message', 'Tiempo agotado, ¡siguiente pregunta!');
+    socket.emit('SaltoPreguntaCliente')
   });
 
   // Send messages when a player leaves the game
