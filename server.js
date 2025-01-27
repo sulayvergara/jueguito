@@ -6,7 +6,7 @@ const { Server: WebsocketServer } = require("socket.io");
 const config = require("./network/config");
 const routes = require("./network/routes");
 const db = require("./network/db");
-const { registerHandler, loginHandler, questionsHandler , addquestionHandler, deletequestionHandler} = require("./public/js/socket");
+const { registerHandler, loginHandler, questionsHandler , addquestionHandler, deletequestionHandler, StudentsHandler} = require("./public/js/socket");
 
 var app = express();
 const server = http.createServer(app);
@@ -195,6 +195,7 @@ io.on("connection", (socket) => {
   questionsHandler(socket);
   addquestionHandler(socket);
   deletequestionHandler(socket);
+  StudentsHandler(socket);
 
   // The state for this individual session = player
   const state = {

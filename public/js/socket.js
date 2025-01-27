@@ -84,6 +84,18 @@ const deletequestionHandler = (socket) => {
     });
 };
 
+const StudentsHandler = (socket) => {
+    socket.on('getStudents', async () => {
+        console.log('Solicitud de obtener estudiantes recibida');
+        try {
+            const estudiantes = await userController.getEstudiantes(); // Método para obtener preguntas
+            socket.emit('studentsSuccess', { message: 'Estudiantes obtenidos con éxito', estudiantes });
+        } catch (error) {
+            console.error('Error al obtener preguntas:', error);
+            socket.emit('studentsError', { message: 'Error al obtener preguntas' });
+        }
+    });
+};
 
 
-module.exports = { registerHandler, loginHandler , questionsHandler, addquestionHandler, deletequestionHandler};
+module.exports = { registerHandler, loginHandler , questionsHandler, addquestionHandler, deletequestionHandler, StudentsHandler};
