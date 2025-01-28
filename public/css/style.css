@@ -273,7 +273,6 @@ input[type='submit'],
   display: none;
 }
 
-/* Agregar al archivo style.css existente */
 /* Quiz Modal Styles */
 .quiz-modal {
   display: none;
@@ -294,19 +293,22 @@ input[type='submit'],
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.85);
   z-index: -1;
 }
 
 .quiz-box {
-  background: #fff;
-  border-radius: 10px;
-  padding: 20px;
+  background: rgba(0, 0, 0, 0.568);
+  border: 2px solid rgb(28, 126, 206);
+  border-radius: 15px;
+  padding: 25px;
   width: 90%;
   max-width: 600px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  transform: translateY(0);
-  transition: transform 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 25px rgba(26, 45, 218, 0.3);
+  color: #f5f5f5;
+  font-family: 'Roboto Mono', monospace;
 }
 
 .quiz-header {
@@ -314,14 +316,16 @@ input[type='submit'],
   justify-content: space-between;
   align-items: center;
   padding-bottom: 15px;
-  border-bottom: 2px solid #eee;
+  border-bottom: 2px solid rgb(235, 235, 235);
   margin-bottom: 20px;
 }
 
 .quiz-header h3 {
   margin: 0;
-  color: #2c3e50;
-  font-size: 1.5em;
+  color: rgb(245, 245, 245);
+  font-size: 1.8em;
+  font-weight: 300;
+  border-color: #206f86;
 }
 
 .timer-container {
@@ -331,16 +335,17 @@ input[type='submit'],
 }
 
 .timer-label {
-  color: #666;
+  color: #f5f5f5;
+  font-size: 1.1em;
 }
 
 .timer {
-  background: #2c3e50;
-  color: white;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-weight: bold;
-  min-width: 60px;
+  background: rgb(218, 26, 26);
+  color: #f5f5f5;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-weight: 400;
+  min-width: 70px;
   text-align: center;
   transition: background-color 0.3s ease;
 }
@@ -351,87 +356,185 @@ input[type='submit'],
 }
 
 .question {
-  font-size: 1.2em;
-  color: #2c3e50;
-  margin-bottom: 20px;
-  line-height: 1.5;
+  font-size: 1.3em;
+  color: #f5f5f5;
+  margin-bottom: 25px;
+  line-height: 1.6;
 }
 
 .options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .option-btn {
-  background: #f8f9fa;
-  border: 2px solid #dee2e6;
+  background: rgba(51, 195, 240, 0.1);
+  border: 1px solid #33c3f0;
   padding: 15px 20px;
   border-radius: 8px;
   font-size: 1.1em;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  color: #f5f5f5;
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 300;
+  display: flex;
+  align-items: center;
   text-align: left;
+  width: 100%;
+}
+
+/* New styles for the text container inside button */
+.option-btn > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.option-btn > div span {
+  display: inline-block;
+  white-space: normal;
+  line-height: 1.4;
 }
 
 .option-btn:hover:not(:disabled) {
-  background: #e9ecef;
+  background: rgba(51, 195, 240, 0.2);
   transform: translateX(5px);
 }
 
 .option-btn.selected {
-  background: #007bff;
-  color: white;
-  border-color: #0056b3;
+  background: rgba(51, 195, 240, 0.4);
+  border-color: #33c3f0;
 }
 
 .option-btn:disabled {
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .quiz-footer {
   margin-top: 20px;
   padding-top: 15px;
-  border-top: 2px solid #eee;
+  border-top: 2px solid rgb(247, 247, 247);
 }
 
 .quiz-tip {
-  color: #666;
+  color: #999;
   font-size: 0.9em;
   text-align: center;
   margin: 0;
 }
 
 @keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .quiz-box {
     width: 95%;
-    padding: 15px;
+    padding: 20px;
+    margin: 10px;
   }
   
   .quiz-header h3 {
-    font-size: 1.2em;
+    font-size: 1.4em;
   }
   
   .question {
-    font-size: 1.1em;
+    font-size: 1.2em;
   }
   
   .option-btn {
     padding: 12px 15px;
     font-size: 1em;
   }
+  
+  .timer-container {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+  }
+}
+
+/*contador*/
+.countdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.countdown-content {
+  text-align: center;
+  padding: 2rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.countdown-content h2 {
+  color: #ffffff;
+  font-size: 3rem;
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  text-shadow: 0 0 10px rgba(0, 128, 255, 0.7);
+  animation: pulse 1s infinite;
+}
+
+.countdown-number {
+  display: block;
+  font-size: 5rem;
+  font-weight: bold;
+  color: #4CAF50;
+  margin: 1rem 0;
+  animation: scaleNumber 1s infinite;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleNumber {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.countdown-overlay.fade-out {
+  animation: fadeOut 0.5s ease-out forwards;
 }

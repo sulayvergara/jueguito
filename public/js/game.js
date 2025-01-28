@@ -121,7 +121,16 @@
         const countdownDiv = document.createElement('div');
         countdownDiv.id = 'countdown';
         countdownDiv.className = 'countdown-overlay';
-        countdownDiv.innerHTML = `<h2>Game starting in: ${count}</h2>`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'countdown-content';
+        
+        contentDiv.innerHTML = `
+          <h2>¡Comienza en!</h2>
+          <span class="countdown-number">${count}</span>
+        `;
+        
+        countdownDiv.appendChild(contentDiv);
         document.body.appendChild(countdownDiv);
       });
 
@@ -141,13 +150,19 @@
       });
 
       socket.on('updateCountdown', (count) => {
-          const countdownDiv = document.getElementById('countdown');
-          if (countdownDiv) {
-              countdownDiv.innerHTML = `<h2>Game starting in: ${count}</h2>`;
-              if (count <= 0) {
-                  countdownDiv.remove();
-              }
+        const countdownDiv = document.getElementById('countdown');
+        const numberSpan = countdownDiv?.querySelector('.countdown-number');
+        
+        if (numberSpan) {
+          numberSpan.textContent = count;
+          
+          if (count <= 0) {
+            countdownDiv.classList.add('fade-out');
+            setTimeout(() => {
+              countdownDiv.remove();
+            }, 500);
           }
+        }
       });
 
       socket.on('timeExpired', () => {
@@ -488,13 +503,25 @@
   
   function renderQuestion(preguntaData, questionText, optionsContainer) {
     questionText.textContent = preguntaData.question;
-  
+    
+
     preguntaData.options.forEach((opcion) => {
       const button = document.createElement('button');
       button.className = 'option-btn';
       button.dataset.respuesta = opcion.option;
-      button.textContent = `${opcion.option}) ${opcion.text}`;
+
+
+      // Crear contenedor flex para el texto
+      const textContainer = document.createElement('div');
+      textContainer.style.display = 'flex';
+      textContainer.style.alignItems = 'center';
+      textContainer.style.width = '100%';
   
+      // Agregar el texto de la opción con el formato correcto
+      textContainer.innerHTML = `<span>${opcion.option}) ${opcion.text}</span>`;
+      
+      button.appendChild(textContainer);
+
       button.addEventListener('click', function() {
         if (!this.disabled) {
           handleOptionSelection(this, optionsContainer, preguntaData._id);

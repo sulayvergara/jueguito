@@ -28,7 +28,6 @@ class Partida {
     this.turno = jugador1; // El turno inicial es del jugador 1
     this.tableros = {}; // Almacena los tableros de ambos jugadores
     this.estado = "esperando"; // Estado inicial de la partida
-    this.countdown = 3; // 5 seconds countdown to start
     this.currentQuestion = null;
     this.currentPlayerShots = null;
     this.questionTimer = null;
@@ -219,7 +218,7 @@ const gameQuestionStates = {};
     // Iniciar nueva pregunta después de un breve retraso
     setTimeout(() => {
       startNewQuestion(gameId, io);
-    }, 10000);
+    }, 1000);
   }
 
   // Función para iniciar una nueva pregunta
@@ -297,7 +296,7 @@ const gameQuestionStates = {};
   
         setTimeout(() => {
           startNewQuestion(gameId, io);
-        }, 1500);
+        }, 1);
       } else {
         socket.emit('message', 'Respuesta incorrecta, ¡espera a que el otro jugador responda!');
       }
