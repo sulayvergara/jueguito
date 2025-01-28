@@ -1,5 +1,6 @@
 const userController = require('../../components/usuario/controller');
 const questionsController = require('../../components/preguntas/controller');
+const gamesController = require('../../components/juego/gameservices');
 
 const registerHandler = (socket) => {
     socket.on('register', async (userData) => {
@@ -97,5 +98,19 @@ const StudentsHandler = (socket) => {
     });
 };
 
+const GameHandler = (socket) => {
+    socket.on('getGames', async () => {
+        console.log('Solicitud de obtener partidas recibida');
+        try {
+            const games = await gamesController.getAllGames(); // Método para obtener preguntas
+            socket.emit('gamesSuccess', { message: 'partidas obtenidas con éxito', games});
+        } catch (error) {
+            console.error('Error al obtener partidas:', error);
+            socket.emit('gamesError', { message: 'Error al obtener partidas' });
+        }
+    });
+};
 
-module.exports = { registerHandler, loginHandler , questionsHandler, addquestionHandler, deletequestionHandler, StudentsHandler};
+module.exports = { registerHandler, loginHandler , questionsHandler, addquestionHandler, 
+    deletequestionHandler, StudentsHandler, GameHandler,
+};

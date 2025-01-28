@@ -103,4 +103,14 @@ const gameService = {
   }
 };
 
-module.exports = gameService;
+async function getAllGames() {
+  try {
+    const games = await Game.find(); // Obtiene todas las partidas
+    return games;
+  } catch (error) {
+    console.error("Error al obtener las partidas:", error);
+    throw new Error("No se pudieron obtener las partidas.");
+  }
+}
+
+module.exports = {gameService , getAllGames};

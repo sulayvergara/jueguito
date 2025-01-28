@@ -162,6 +162,60 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Hubo un error al cargar los estudiantes.');
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Cargando partidas automáticamente...');
+
+    // Emitir el evento para obtener las partidas al cargar la página
+    socket.emit('getGames');
+
+    // Escuchar el resultado exitoso
+    socket.on('gamesSuccess', (data) => {
+        console.log('Partidas recibidas:', data.games);
+        
+        // Renderizar las partidas en la página
+        const gamesContainer = document.getElementById('games-container');
+        gamesContainer.innerHTML = ''; // Limpiar contenido anterior
+
+        data.games.forEach((game) => {
+            const gameElement = document.createElement('div');
+            gameElement.classList.add('game');
+
+            // Mostrar ID del juego
+            const gameId = document.createElement('h3');
+            gameId.textContent = `ID del Juego: ${game.gameId}`;
+            gameElement.appendChild(gameId);
+
+            // Mostrar el estado del juego
+            const gameState = document.createElement('p');
+            gameState.textContent = `Estado del Juego: ${game.gameState}`;
+            gameElement.appendChild(gameState);
+
+            // Mostrar nombre del ganador (si existe)
+            if (game.winner) {
+                const gameWinner = document.createElement('p');
+                gameWinner.textContent = `Ganador: ${game.winner.playerName}`;
+                gameElement.appendChild(gameWinner);
+            } else {
+                const noWinner = document.createElement('p');
+                noWinner.textContent = 'Aún no hay ganador';
+                gameElement.appendChild(noWinner);
+            }
+
+            // Mostrar jugadores
+            const playersList = document.createElement('ul');
+            game.players.forEach(player => {
+                const playerItem = document.createElement('li');
+                playerItem.textContent = `${player.playerName} (Barcos colocados: ${player.shipsPlaced})`;
+                playersList.appendChild(playerItem);
+            });
+            gameElement.appendChild(playersList);
+
+            // Agregar el elemento del juego al contenedor
+            gamesContainer.appendChild(gameElement);
+        });
+    });
+});
+
 
 socket.on('error', (message) => {
     console.error('Error: ',message);
@@ -173,6 +227,16 @@ function mostrarError(mensaje) {
     setTimeout(() => {
         document.getElementById('error').textContent = '';
     }, 3000);
+}
+
+function mostrarGames() {
+    // Ocultar el menú principal
+    const mainTab = document.getElementById('main-tab');
+    mainTab.classList.add('hidden');
+
+    // Mostrar la pestaña de games
+    const gamesTab = document.getElementById('games-tab');
+    gamesTab.classList.remove('hidden');
 }
 
 function mostrarFormulario() {

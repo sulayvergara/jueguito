@@ -1,5 +1,6 @@
 const gameinterface = require('./interface');
 const generateUUID = require('../../components/helpers/generateUUID');
+const { getAllGames } = require('./gameservices');
 
 async function createNewGame(playerName, playerId) {
     const gameId = generateUUID();
@@ -18,10 +19,11 @@ async function createNewGame(playerName, playerId) {
     return gameinterface.findGameById(id);
   }
   
-  // Add other controller methods as needed
-  
+ 
+
   module.exports = {
     createNewGame,
     getGameById,
+   
     // Export other methods
   }
