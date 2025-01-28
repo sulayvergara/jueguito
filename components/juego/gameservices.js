@@ -37,6 +37,21 @@ const gameService = {
       { new: true }
     );
   },
+  async recordShipsPlaced(gameId, playerId) {
+    return await Game.findOneAndUpdate(
+      { 
+        gameId,
+        'players.playerId': playerId 
+      },
+      { 
+        $inc: { 
+          'players.$.shipsPlaced': 1
+        }
+      },
+      { new: true }
+    );
+  },
+  
 
   async recordShot(gameId, playerId, isHit) {
     const updateField = isHit ? 'shotsHit' : 'shotsMissed';

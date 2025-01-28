@@ -132,7 +132,7 @@ app.post("/games", async(req, res) => {
       const game = new Game(gameId, `${playerName}'s Game`, [player]);
       
       // Guardar en MongoDB
-      //await gameService.createGame(gameId, player);
+      await gameService.createGame(gameId, player);
       
       games = { ...games, [gameId]: game };
       console.log("All games currently live: ", JSON.stringify(games));
@@ -489,7 +489,7 @@ io.on("connection", (socket) => {
       // socket.broadcast.to(state.gameId).emit("yourTurn", true); // Turno para el siguiente jugador
   });
 
-  socket.on("clickOnFriendlyGrid", ({ x, y }) => {
+  socket.on("clickOnFriendlyGrid", async({ x, y }) => {
     if (thisGame.gameState === gameStates.setShipsRound) {
       y = letters.indexOf(y);
       const currentCellValue = thisGame[`${state.playerId}_grid`][y][x];
@@ -500,6 +500,9 @@ io.on("connection", (socket) => {
       ) {
         thisGame[`${state.playerId}_grid`][y][x] = 1;
         thisGame[`${state.playerId}_shipsPlaced`]++;
+        
+        await gameService.recordShipsPlaced(thisGame.id, state.playerId);
+          
         socket.emit(
           "message",
           `Battleship placed! ${
@@ -569,6 +572,7 @@ io.on("connection", (socket) => {
       io,
       socket
     );
+    await gameService.recordQuestion(thisGame.id, state.playerId, respuesta);
   });
   
 
