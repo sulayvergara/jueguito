@@ -52,6 +52,21 @@ const gameService = {
     );
   },
   
+  async recordLostShip(gameId, playerId) {
+    return await Game.findOneAndUpdate(
+      { 
+        gameId,
+        'players.playerId': playerId 
+      },
+      { 
+        $inc: { 
+          'players.$.shipsLost': 1 // Incrementamos el contador de barcos perdidos
+        }
+      },
+      { new: true }
+    );
+  },
+  
 
   async recordShot(gameId, playerId, isHit) {
     const updateField = isHit ? 'shotsHit' : 'shotsMissed';
