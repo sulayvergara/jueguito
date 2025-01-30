@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Resaltar la opción correcta
                 if (String.fromCharCode(65 + index) === question.answer) {
                     optionText.style.fontWeight = 'bold';
-                    optionText.style.color = 'green';
+                    optionText.style.color = 'blue';
                 }
 
                 optionElement.appendChild(optionText);

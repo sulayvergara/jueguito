@@ -131,20 +131,28 @@ input[type='submit'],
   display: none;
 }
 
-.question-container {
+#question-container {
   margin: 20px;
   padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   border: 1px solid #ccc;
   border-radius: 8px;
-  background-color: #f9f9f9;
+  gap: 20px;
 
 }
 
 .question {
+  margin: 20px;
   margin-bottom: 20px;
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
+  background-color: #00000081;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #ddd;
+  transition: transform 0.2s;
 }
+
 
 .question h3 {
   margin: 0;
@@ -155,14 +163,13 @@ input[type='submit'],
 .option {
   margin: 5px 0;
   padding: 5px;
-  background-color: #b0b0b0d6;
+  background-color: #e9e0e077;
   border-radius: 4px;
   color: white;
 }
 
 #formulario {
   display: none; /* Ocultar el formulario al cargar la página */
-  
 }
 
 #formulario {
@@ -170,9 +177,15 @@ input[type='submit'],
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   margin: 20px;
-  padding: 5px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px;
   width: 80%;
-  max-width: 900px;
+  max-width: 1200px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+
+  
 }
 
 h2 {
@@ -195,6 +208,8 @@ h2 {
 
 label {
   font-weight: bold;
+  width: 20%;
+  margin: 0px 0px 15px;
 }
 
 input[type="text"] {
@@ -207,6 +222,82 @@ input[type="text"] {
 
 input[type="checkbox"] {
   margin-left: 10px;
+}
+/* Boton de eliminar
+/* Estilos base del botón */
+.delete-button {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  margin-top: 10px;
+  justify-content: center;
+}
+
+/* Efecto hover */
+.delete-button:hover {
+  background-color: #ff3333bd;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 77, 77, 0.3);
+}
+
+/* Efecto al hacer click */
+.delete-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(255, 77, 77, 0.3);
+}
+
+/* Animación de onda al hacer click */
+.delete-button::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0);
+  opacity: 0;
+  border-radius: 5px;
+  transition: all 0.4s ease-out;
+}
+
+.delete-button:active::after {
+  transform: scale(2);
+  opacity: 0;
+}
+
+/* Animación al cargar el botón */
+@keyframes appearButton {
+  from {
+      opacity: 0;
+      transform: translateY(10px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+.delete-button {
+  animation: appearButton 0.5s ease-out forwards;
+}
+
+/* Animación antes de eliminar */
+@keyframes deleteShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.delete-button.deleting {
+  animation: deleteShake 0.3s ease-in-out;
 }
 
 /* Estilos para la tabla de partidas */
