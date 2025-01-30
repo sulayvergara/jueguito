@@ -1,6 +1,6 @@
 const gameinterface = require('./interface');
 const generateUUID = require('../../components/helpers/generateUUID');
-const { getAllGames } = require('./gameservices');
+const Game = require('./model');
 
 async function createNewGame(playerName, playerId) {
     const gameId = generateUUID();
@@ -19,11 +19,21 @@ async function createNewGame(playerName, playerId) {
     return gameinterface.findGameById(id);
   }
   
+async function getAllGames() {
+  try {
+    const games = await Game.find(); // Obtiene todas las partidas
+      return games;
+  } catch (error) {
+      console.error("Error al obtener las partidas:", error);
+    throw new Error("No se pudieron obtener las partidas.");
+  }
+}
  
 
   module.exports = {
     createNewGame,
     getGameById,
+    getAllGames,
    
     // Export other methods
   }

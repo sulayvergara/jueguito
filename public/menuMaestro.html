@@ -37,11 +37,6 @@
                 <button class="button-primary tab-trigger" id="partidas-btn" data-targets="games-tab" onclick="mostrarGames()">Partidas</button>
               </div>
 
-              <div class="tab hidden" id="games-tab">
-                <h5 class="text-center"><strong>Partidas</strong></h5>
-                <div id="games-container"></div>
-              </div>
-
               <div class="tab hidden" id="preguntas-tab">
                 <h5 class="text-center"><strong>Gestionar Preguntas</strong></h5>
                   <button id="btn-new" class="button tab-trigger" class="btn-new" onclick="FormularioNuevaPregunta()">
@@ -92,6 +87,10 @@
                 <button class="button tab-trigger" data-targets="main-tab" onclick="mostrarMenu()">Regresar al menu</button>
               </div>
             </div>
+            <div class="tab hidden" id="games-tab">
+              <h5 class="text-center"><strong>Partidas</strong></h5>
+              <div id="games-container"></div>
+            </div>
           </div>
         </div>
       </main>
@@ -100,5 +99,6 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/preguntas.js"></script>
   <script src="/js/socket.js"></script>
+  <script src="/js/games.js"></script>
 </body>
 </html>

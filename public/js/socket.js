@@ -1,6 +1,6 @@
 const userController = require('../../components/usuario/controller');
 const questionsController = require('../../components/preguntas/controller');
-const gamesController = require('../../components/juego/gameservices');
+const gamesController = require('../../components/juego/controller');
 
 const registerHandler = (socket) => {
     socket.on('register', async (userData) => {
