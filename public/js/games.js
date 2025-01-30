@@ -1,65 +1,92 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Cargando partidas automáticamente...');
-
-    // Emitir el evento para obtener las partidas al cargar la página
+    
     socket.emit('getGames');
-
-    // Escuchar el resultado exitoso
+    
     socket.on('gamesSuccess', (data) => {
         console.log('Partidas recibidas:', data.games);
         
-        // Renderizar las partidas en la tabla
         const gamesContainer = document.getElementById('games-container');
-        gamesContainer.innerHTML = ''; // Limpiar contenido anterior
-
-        // Crear la tabla y encabezados
+        gamesContainer.innerHTML = '';
+        
         const table = document.createElement('table');
         table.classList.add('games-table');
         
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
-        ['ID del Juego', 'Estado', 'Ganador', 'Jugadores'].forEach(text => {
+        
+        // Nuevos encabezados
+        ['ID Partida', 'Jugadores', 'Preguntas Correctas', 'Precisión Disparos', 'Estado', 'Ganador', 'Duración'].forEach(text => {
             const th = document.createElement('th');
             th.textContent = text;
             headerRow.appendChild(th);
         });
         thead.appendChild(headerRow);
         table.appendChild(thead);
-
+        
         const tbody = document.createElement('tbody');
-
+        
         data.games.forEach((game) => {
             const row = document.createElement('tr');
-
-            // ID del Juego
+            
+            // ID Partida
             const gameIdCell = document.createElement('td');
             gameIdCell.textContent = game.gameId;
             row.appendChild(gameIdCell);
-
-            // Estado del Juego
+            
+            // Jugadores
+            const playersCell = document.createElement('td');
+            game.players.forEach(player => {
+                const playerDiv = document.createElement('div');
+                playerDiv.textContent = player.playerName;
+                playersCell.appendChild(playerDiv);
+            });
+            row.appendChild(playersCell);
+            
+            // Preguntas Correctas
+            const questionsCell = document.createElement('td');
+            game.players.forEach(player => {
+                const playerStats = document.createElement('div');
+                playerStats.textContent = `${player.questionsCorrect}/${player.questionsAnswered}`;
+                questionsCell.appendChild(playerStats);
+            });
+            row.appendChild(questionsCell);
+            
+            // Precisión de Disparos
+            const accuracyCell = document.createElement('td');
+            game.players.forEach(player => {
+                const accuracyStats = document.createElement('div');
+                const totalShots = player.shotsHit + player.shotsMissed;
+                accuracyStats.textContent = `${player.shotsHit}/${totalShots}`;
+                accuracyCell.appendChild(accuracyStats);
+            });
+            row.appendChild(accuracyCell);
+            
+            // Estado
             const gameStateCell = document.createElement('td');
             gameStateCell.textContent = game.gameState;
             row.appendChild(gameStateCell);
-
+            
             // Ganador
             const gameWinnerCell = document.createElement('td');
             gameWinnerCell.textContent = game.winner ? game.winner.playerName : 'Aún no hay ganador';
             row.appendChild(gameWinnerCell);
-
-            // Lista de jugadores
-            const playersCell = document.createElement('td');
-            const playersList = document.createElement('ul');
-            game.players.forEach(player => {
-                const playerItem = document.createElement('li');
-                playerItem.textContent = `${player.playerName} (Barcos colocados: ${player.shipsPlaced})`;
-                playersList.appendChild(playerItem);
-            });
-            playersCell.appendChild(playersList);
-            row.appendChild(playersCell);
-
+            
+            // Duración
+            const durationCell = document.createElement('td');
+            if (game.startTime && game.endTime) {
+                const start = new Date(game.startTime);
+                const end = new Date(game.endTime);
+                const duration = Math.floor((end - start) / 1000 / 60); // duración en minutos
+                durationCell.textContent = `${duration} min`;
+            } else {
+                durationCell.textContent = 'En progreso';
+            }
+            row.appendChild(durationCell);
+            
             tbody.appendChild(row);
         });
-
+        
         table.appendChild(tbody);
         gamesContainer.appendChild(table);
     });
