@@ -413,6 +413,8 @@ io.on("connection", (socket) => {
           thisGame[`${otherPlayerId}_grid`][y][x] = 3; // Marcar como golpe en el tablero enemigo
           state.otherPlayerGrid[y][x] = 3; // Actualizar la vista del jugador
           thisGame[`${otherPlayerId}_shipsLost`]++; // Incrementar los barcos perdidos del enemigo
+           // Registrar la pérdida de un barco en la base de datos
+          await gameService.recordLostShip(state.gameId, otherPlayerId);
           // Registrar el disparo exitoso en MongoDB
           await gameService.recordShot(state.gameId, state.playerId, true);
           socket.emit(
@@ -491,9 +493,6 @@ io.on("connection", (socket) => {
     } catch (error) {
       console.error("Error processing shot:", error);
     } 
-      // Notificar a los clientes sobre el turno
-      // socket.emit("yourTurn", false); // Jugador actual termina su turno
-      // socket.broadcast.to(state.gameId).emit("yourTurn", true); // Turno para el siguiente jugador
   });
 
   socket.on("clickOnFriendlyGrid", async({ x, y }) => {
