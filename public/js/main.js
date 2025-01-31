@@ -82,14 +82,20 @@
     // Update games list
     function updateGamesList(gamesData, gamesListElement) {
       gamesListElement.innerHTML = '';
-  
+
       gamesData.forEach((game) => {
         if (game.players[0].id !== state.playerId) {
+          const hostName = game.players[0].playerName || 'Jugador desconocido';
           gamesListElement.innerHTML += `
-            <option value="${game.id}">${game.gameName} (${game.players.length}/2)</option>
+            <option value="${game.id}">Partida de ${hostName} (${game.players.length}/2)</option>
           `;
         }
       });
+
+      // Si no hay juegos disponibles, mostrar un mensaje
+      if (gamesListElement.innerHTML === '') {
+        gamesListElement.innerHTML = '<option value="">No hay partidas disponibles</option>';
+      }
     }
   
     // Fetch list of games from server
