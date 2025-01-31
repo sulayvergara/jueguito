@@ -401,7 +401,7 @@ input[type='submit'],
 }
 
 .option-btn:hover:not(:disabled) {
-  background: rgba(51, 195, 240, 0.2);
+  background: rgba(252, 252, 252, 0.712);
   transform: translateX(5px);
 }
 
@@ -412,7 +412,7 @@ input[type='submit'],
 
 .option-btn:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 .quiz-footer {
@@ -537,4 +537,49 @@ input[type='submit'],
 
 .countdown-overlay.fade-out {
   animation: fadeOut 0.5s ease-out forwards;
+}
+
+/*Partida Terminada*/
+.game-over-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s ease-out;
+}
+
+
+
+.game-over-content {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.548);
+  padding: 2rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.5s ease-in;
+  backdrop-filter: blur(8px);
+}
+
+.game-over-content h2 {
+  color: #f3f3f3be;
+  font-size: 5rem;
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  text-shadow: 0 0 10px rgba(253, 253, 253, 0.329);
+  animation: pulse 1s infinite;
+}
+.game-over-content p {
+  color: #666666;
+  font-size: 3rem;
+  font-weight: bold;
+  color: #4c98af;
+  margin: 1rem 0;
+  animation: scaleNumber 1s infinite;
 }

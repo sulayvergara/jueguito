@@ -214,8 +214,6 @@ const gameQuestionStates = {};
     gameQuestionStates[gameId].wrongAnswers.clear();
     
     io.to(gameId).emit('timeExpired');
-    io.to(gameId).emit('message', 'Tiempo agotado, ¡siguiente pregunta!');
-    
     // Iniciar nueva pregunta después de un breve retraso
     setTimeout(() => {
       startNewQuestion(gameId, io);
@@ -439,6 +437,13 @@ io.on("connection", (socket) => {
                   gridToUpdate: "friendlyGrid",
                   data: thisGame[`${otherPlayerId}_grid`],
               });
+              
+              io.to(state.gameId).emit("partidaTerminada", {
+                ganadorId: state.playerId,
+                perdedorId: otherPlayerId,
+                ganadorShipsLost: thisGame[`${state.playerId}_shipsLost`],
+                perdedorShipsLost: thisGame[`${otherPlayerId}_shipsLost`]
+              });  
 
               thisGame.gameState = gameStates.gameOver; // Cambiar el estado del juego a terminado
               io.to(state.gameId).emit("changeGameState", thisGame.gameState);
@@ -598,6 +603,7 @@ io.on("connection", (socket) => {
       "message",
       `${state.playerName} has left the game.`
     );
+    //terminado
 
     // Cleanup when one or both players leave => delete game from memory when both left
     if (thisGame)

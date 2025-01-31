@@ -185,6 +185,37 @@
         }
       });
 
+      socket.on("partidaTerminada", (data) => {
+        const gameOverDiv = document.createElement('div');
+        gameOverDiv.className = 'game-over-overlay';
+        
+        const mensaje = state.playerId === data.ganadorId ? 
+            '¡Has Ganado!' : 
+            '¡Has Perdido!';
+        
+        gameOverDiv.innerHTML = `
+            <div class="game-over-content">
+                <h2>${mensaje}</h2>
+                <p>Volviendo al menú en 5 segundos...</p>
+            </div>
+        `;
+        
+        document.body.appendChild(gameOverDiv);
+        
+        // Iniciar cuenta regresiva y redireccionar
+        let countdown = 40;
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            const countdownText = gameOverDiv.querySelector('p');
+            countdownText.textContent = `Volviendo al menú en ${countdown} segundos...`;
+            
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                window.location.href = './menu.html';
+            }
+        }, 1000);
+    });
+
       // On receiving gameStateChange
       socket.on("changeGameState", (newGameState) => {
         switch (newGameState) {
@@ -214,7 +245,7 @@
           case gameStates.gameOver:
             state.gameState = gameStates.gameOver;
             currentTurnText.innerHTML = "Game Over!";
-            setTimeout(() => redirectToHomePage(), 10000);
+            setTimeout(() => redirectToHomePage(), 5000);
             console.log(state.gameState);
             break;          
         }
