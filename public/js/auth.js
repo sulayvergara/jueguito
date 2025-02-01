@@ -4,14 +4,33 @@ const gameContainer = document.getElementById('game-container');
 const questionContainer = document.getElementById('question-container');
 const socket = io(); 
 
-// Login function
-document.getElementById('login-btn').addEventListener('click', () => {
+document.getElementById('login-btn').addEventListener('click', login);
+
+document.getElementById('password').addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+        login();
+    }
+});
+
+function login() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    console.log('Intentando iniciar sesion con: ', email);
-    console.log('contraseña ', password);
+
+    // Validación básica del formato de email
+    if (!email || !email.includes('@')) {
+        alert('Por favor ingresa un correo electrónico válido');
+        return;
+    }
+
+    // Validación de contraseña
+    if (!password) {
+        alert('Por favor ingresa tu contraseña');
+        return;
+    }
+
+    console.log('Intentando iniciar sesión con: ', email);
     socket.emit('login', { email, password });
-});
+}
 
 // Register function
 document.getElementById('register-btn').addEventListener('click', () => {
@@ -91,7 +110,7 @@ socket.on('loginSuccess', (usuario) => {
     } else if (usuario.rol === 'estudiante') {
         window.location.href = './menu.html'; // Redirige al menú del estudiante
     } else {
-        alert('Rol desconocido. Por favor, contacte al administrador.');
+        alert('El correo o la contraseña es incorrecta. Vuelve a intentarlo.');
     }
 });
 
@@ -103,7 +122,7 @@ socket.on('registerSuccess', () => {
 
 socket.on('error', (message) => {
     console.error('Error: ',message);
-    alert(message);
+
 });
 
 

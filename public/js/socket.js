@@ -21,7 +21,7 @@ const loginHandler = (socket) => {
             console.log('Datos de login recibidos en el servidor:', { email, password });
             const user = await userController.getUsuario(email);
             if (!user) {
-                socket.emit('loginError', 'Usuario no encontrado');
+                socket.emit('loginError', 'El correo o la contraseña es incorrecta. Vuelve a intentarlo.');
                 return;
             }
             
