@@ -97,7 +97,13 @@ app.get("/games/join", async(req, res) => {
   } else if (games[gameId].isGameEmpty()) {
     delete games[gameId];
     res.status(404).redirect("/");
-  } else {
+  }
+  // Agregar validación para evitar que el mismo jugador se una a su propia partida
+  else if (games[gameId].players[0].playerName === playerName) {
+    res.status(400).json({ error: "No puedes unirte a tu propia partida" });
+  }
+  
+  else {
     try {
       // Agregar el jugador al juego en memoria
       games[gameId].players.push(player);

@@ -101,17 +101,22 @@
     function updateGamesList(gamesData, gamesListElement) {
       gamesListElement.innerHTML = '';
 
-      gamesData.forEach((game) => {
-        if (game.players[0].id !== state.playerId) {
+      // Obtener el nombre del usuario actual
+      const currentUserName = localStorage.getItem('userName');
+
+      // Filtrar las partidas donde el usuario actual es el creador
+      const availableGames = gamesData.filter(game => {
+        return game.players[0].playerName !== currentUserName;
+      });
+
+      if (availableGames.length > 0) {
+        availableGames.forEach((game) => {
           const hostName = game.players[0].playerName || 'Jugador desconocido';
           gamesListElement.innerHTML += `
             <option value="${game.id}">Partida de ${hostName} (${game.players.length}/2)</option>
           `;
-        }
-      });
-
-      // Si no hay juegos disponibles, mostrar un mensaje
-      if (gamesListElement.innerHTML === '') {
+        });
+      } else {
         gamesListElement.innerHTML = '<option value="">No hay partidas disponibles</option>';
       }
     }
