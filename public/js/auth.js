@@ -79,6 +79,9 @@ document.getElementById('show-login').addEventListener('click', () => {
 socket.on('loginSuccess', (usuario) => {
     console.log('Datos del usuario:', usuario);
 
+     // Guardar el nombre del usuario en localStorage
+     localStorage.setItem('userName', `${usuario.nombre} ${usuario.apellido}`);
+
     // Mostrar mensaje de bienvenida
     document.getElementById('game-status').textContent = `Bienvenido, ${usuario.nombre} ${usuario.apellido}!`;
 

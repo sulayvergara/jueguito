@@ -13,6 +13,18 @@
       const joinForm = d.querySelector('#join-form');
       const createForm = d.querySelector('#create-form');
   
+      // Obtener el nombre del usuario del localStorage
+      const userName = localStorage.getItem('userName');
+
+      // Auto-completar campos de nombre si existe
+      if (userName) {
+        const joinNameInput = joinForm.querySelector('input[name="playerName"]');
+        const createNameInput = createForm.querySelector('input[name="playerName"]');
+        
+        if (joinNameInput) joinNameInput.value = userName;
+        if (createNameInput) createNameInput.value = userName;
+      }
+
       // Init function
       (async function init() {
         const hasPlayerNoId = state.playerId === '';
