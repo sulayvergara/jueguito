@@ -20,9 +20,15 @@
       if (userName) {
         const joinNameInput = joinForm.querySelector('input[name="playerName"]');
         const createNameInput = createForm.querySelector('input[name="playerName"]');
+        if (joinNameInput) {
+          joinNameInput.value = userName;
+          joinNameInput.readOnly = true; // Bloquear el campo
+        }
         
-        if (joinNameInput) joinNameInput.value = userName;
-        if (createNameInput) createNameInput.value = userName;
+        if (createNameInput) {
+            createNameInput.value = userName;
+            createNameInput.readOnly = true; // Bloquear el campo
+        }
       }
 
       // Init function
