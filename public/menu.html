@@ -16,6 +16,7 @@
 </head>
 
 <body>
+  <audio id="clickSound" src="assets/audios/botones Menu.mp3"></audio>
   <div class="background">
     <div class="background-overlay">
       <header class="header">
@@ -32,14 +33,14 @@
             <div class="panel main-menu">
               <div class="tab" id="main-tab">
                 <h5 class="text-center"><strong>Menu Principal</strong></h5>
-                <button class="button-primary tab-trigger" id="create-btn" data-targets="create-tab">Crear Nueva Partida</button>
-                <button class="button-primary tab-trigger" id="join-btn" data-targets="join-tab">Unirte A Partida Existente</button>
-                <button class="button tab-trigger" id="show-rules-btn" data-targets="rules-tab">Reglas</button>
+                <button class="button-primary tab-trigger" id="create-btn" data-targets="create-tab" onclick="playClickSound()">Crear Nueva Partida</button>
+                <button class="button-primary tab-trigger" id="join-btn" data-targets="join-tab" onclick="playClickSound()">Unirte A Partida Existente</button>
+                <button class="button tab-trigger" id="show-rules-btn" data-targets="rules-tab" onclick="playClickSound()">Reglas</button>
                 <br>
                 <h6 class="text-center"><strong>Opciones</strong></h6>
-                <button class="button secondary-btn" id="toggle-music-btn">Mostrar/Ocultar Música</button>
-                <button class="button secondary-btn" id="toggle-sound-btn">Mostrar/Ocultar Sonido</button>
-                <button class="button secondary-btn" id="toggle-fullscreen-btn">Pantalla Completa</button>
+                <button class="button secondary-btn" id="toggle-music-btn" onclick="playClickSound()">Mostrar/Ocultar Música</button>
+                <button class="button secondary-btn" id="toggle-sound-btn" onclick="playClickSound()">Mostrar/Ocultar Sonido</button>
+                <button class="button secondary-btn" id="toggle-fullscreen-btn" onclick="playClickSound()">Pantalla Completa</button>
                 <br>
                 <p class="text-center">&copy; <span>2024</span> Creado por <a
                     href="https://github.com/ups-gye/Disociados">Disociados</a>.</p>
@@ -53,10 +54,10 @@
                   <input type="text" name="playerName" class="u-full-width player-name" required>
                   <!-- <label for="password">Game Password (optional):</label>
                   <input type="password" name="password" id="password" class="u-full-width"> -->
-                  <button type="submit" class="button button-primary">Crear Partida</button>
+                  <button type="submit" class="button button-primary" onclick="playClickSound()">Crear Partida</button>
                 </form>
                 <br>
-                <button class="button tab-trigger" data-targets="main-tab">Regresar al menu</button>
+                <button class="button tab-trigger" data-targets="main-tab" onclick="playClickSound()">Regresar al menu</button>
               </div>
               <div class="tab hidden" id="join-tab">
                 <h5 class="text-center"><strong>Regresar al menu</strong></h5>
@@ -66,11 +67,11 @@
                   <label for="game">Partidas Existentes:</label>
                   <select name="game" id="games-list" class="u-full-width" required>
                   </select>
-                  <button type="submit" class="button button-primary">Unirse a partida</button>
+                  <button type="submit" class="button button-primary" onclick="playClickSound()">Unirse a partida</button>
                   <button class="button secondary-btn" id="refresh-games-btn">Recargar LIsta de partidas</button>
                 </form>
                 <br>
-                <button class="button tab-trigger" data-targets="main-tab">Regresar al menu</button>
+                <button class="button tab-trigger" data-targets="main-tab" onclick="playClickSound()">Regresar al menu</button>
               </div>
               <div class="tab hidden" id="rules-tab">
                 <h5 class="text-center"><strong>Reglas</strong></h5>
@@ -80,7 +81,7 @@
                   los 10 barcos(cuadros) ganará la partida, el cuadro en rojo simboliza que impactaste y 
                   el cuadro rosado que pegaste al agua.
                 </p>
-                <button class="button tab-trigger" data-targets="main-tab">Regresar al menu</button>
+                <button class="button tab-trigger" data-targets="main-tab" onclick="playClickSound()">Regresar al menu</button>
               </div>
   
             </div>

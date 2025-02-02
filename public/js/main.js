@@ -158,5 +158,11 @@
     }
   })(window, document);
   
+  function playClickSound() {
+    const sound = document.getElementById('clickSound');
+    sound.currentTime = 0; // Reinicia el sonido si ya está reproduciéndose
+    sound.play();
+  }
+
   const generateUUID = () =>
     Math.random().toString(36).substring(2) + Date.now().toString(36);

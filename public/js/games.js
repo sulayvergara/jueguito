@@ -101,3 +101,9 @@ function mostrarGames() {
     const gamesTab = document.getElementById('games-tab');
     gamesTab.classList.remove('hidden');
 }
+
+function playClickSound() {
+    const sound = document.getElementById('clickSound');
+    sound.currentTime = 0; // Reinicia el sonido si ya está reproduciéndose
+    sound.play();
+}

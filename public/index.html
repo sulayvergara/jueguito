@@ -7,11 +7,12 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    <audio id="clickSound" src="assets/audios/send button chat.mp3"></audio>
     <div id="login-container">
         <h2>Login</h2>
         <input type="email" id="email" placeholder="Email">
         <input type="password" id="password" placeholder="Contraseña">
-        <button id="login-btn">Iniciar Sesión</button>
+        <button id="login-btn" onclick="playClickSound()">Iniciar Sesión</button>
         <p>¿No tienes cuenta? <a href="#" id="show-register">Regístrate</a></p>
     </div>
 
@@ -42,7 +43,7 @@
         <input type="email" id="reg-email" placeholder="Email" required>
         <input type="date" id="reg-fecha-nacimiento" required>
         <input type="password" id="reg-clave" placeholder="Contraseña" required>
-        <button id="register-btn">Registrarse</button>
+        <button id="register-btn" onclick="playClickSound()">Registrarse</button>
         <p>Si ya tienes cuenta, click en <a href="#" id="show-login">Login</a></p>
     </div>
     

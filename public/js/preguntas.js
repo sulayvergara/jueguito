@@ -204,3 +204,8 @@ function FormularioNuevaPregunta() {
     btnNew.style.display = 'none'
 }
 
+function playClickSound() {
+    const sound = document.getElementById('clickSound');
+    sound.currentTime = 0; // Reinicia el sonido si ya está reproduciéndose
+    sound.play();
+}
