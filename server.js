@@ -157,6 +157,7 @@ app.post("/games", async(req, res) => {
 // Game helper functions
 const getInitialGridData = require("./components/helpers/getInitialGridData");
 const { log } = require("console");
+const e = require("express");
 
 // Game states for simple state machine
 const gameStates = {
@@ -168,6 +169,13 @@ const gameStates = {
   gameQuestion: "gameQuestion"
 };
 
+const SHIPS = {
+  fragata: { size: 1, count: 4 },
+  destructor: { size: 2, count: 3 },
+  submarino: { size: 3, count: 2 },
+  acorazado: { size: 4, count: 1 },
+  portaviones: { size: 5, count: 1 }
+};
 // Letter for array-number lookup
 const letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
 
@@ -307,7 +315,24 @@ const gameQuestionStates = {};
       }
     }
   }
-
+  function isValidPlacement(grid, x, y, size, orientation) {
+    const width = grid[0].length;
+    const height = grid.length;
+  
+    // Check bounds
+    if (orientation === 'horizontal') {
+      if (x + size > width) return false;
+      for (let i = 0; i < size; i++) {
+        if (grid[y][x + i] === 1) return false;
+      }
+    } else {
+      if (y + size > height) return false;
+      for (let i = 0; i < size; i++) {
+        if (grid[y + i][x] === 1) return false;
+      }
+    }
+    return true;
+  }
 io.on("connection", (socket) => {
   registerHandler(socket);
   loginHandler(socket);
@@ -342,7 +367,10 @@ io.on("connection", (socket) => {
     thisGame[`${state.playerId}_grid`] = getInitialGridData();
     thisGame[`${state.playerId}_shipsPlaced`] = 0;
     thisGame[`${state.playerId}_shipsLost`] = 0;
-
+    const shipTypes = ['fragata', 'destructor', 'submarino', 'acorazado', 'portaviones'];
+    shipTypes.forEach(shipType => {
+      thisGame[`${state.playerId}_${shipType}Count`] = 0;
+    });
     // Change game state to "initialized"
     thisGame.gameState = gameStates.gameInitialized;
     socket.emit("changeGameState", thisGame.gameState);
@@ -501,66 +529,81 @@ io.on("connection", (socket) => {
     } 
   });
 
-  socket.on("clickOnFriendlyGrid", async({ x, y }) => {
+  socket.on("clickOnFriendlyGrid", async({ x, y, shipType, orientation }) => {
     if (thisGame.gameState === gameStates.setShipsRound) {
       y = letters.indexOf(y);
-      const currentCellValue = thisGame[`${state.playerId}_grid`][y][x];
 
-      if (
-        currentCellValue === 0 &&
-        thisGame[`${state.playerId}_shipsPlaced`] < 10
-      ) {
-        thisGame[`${state.playerId}_grid`][y][x] = 1;
-        thisGame[`${state.playerId}_shipsPlaced`]++;
-        
-        await gameService.recordShipsPlaced(thisGame.id, state.playerId);
-          
-        socket.emit(
-          "message",
-          `Battleship placed! ${
-            10 - thisGame[`${state.playerId}_shipsPlaced`]
-          } to go.`
-        );
-        socket.emit("updateGrid", {
-          gridToUpdate: "friendlyGrid",
-          data: thisGame[`${state.playerId}_grid`],
-        });
-        if (
-          thisGame[`${thisGame.players[0].id}_shipsPlaced`] === 10 &&
-          thisGame[`${thisGame.players[1].id}_shipsPlaced`] === 10
-        ) {
-          let countdown = 5;
-          io.to(state.gameId).emit('startCountdown', countdown);
-          
-          console.log("Inicio de contador");
-          const countdownInterval = setInterval(() => {
-              countdown--;
-              io.to(state.gameId).emit('updateCountdown', countdown);
-              
-              if (countdown <= 0) {
-                  clearInterval(countdownInterval);
-                  thisGame.gameState = gameStates.gameQuestion;
-                  io.to(state.gameId).emit('changeGameState', thisGame.gameState);
-                  io.to(state.gameId).emit(
-                    "message",
-                    "¡Todos los barcos están colocados! Comienza la ronda de preguntas."
-                  );
-              }
-          }, 1000);
+      const shipConfig = SHIPS[shipType];
+
+      if (!shipConfig) {
+        socket.emit("message", "Tipo de barco inválido");
+        return;
+      }
+      // Verificar si aún hay barcos de este tipo disponibles
+      if (thisGame[`${state.playerId}_${shipType}Count`] >= shipConfig.count) {
+        socket.emit("message", `Ya no quedan barcos de tipo ${shipType} disponibles`);
+        return;
+      }
+      // Verificar si el barco cabe en la posición seleccionada
+      const isValid = isValidPlacement(
+        thisGame[`${state.playerId}_grid`],
+        x,
+        y,
+        shipConfig.size,
+        orientation
+      );
+      if (!isValid) {
+        socket.emit("message", "Posición inválida para colocar el barco");
+        return;
+      }
+      // Colocar el barco en el grid
+      if (orientation === 'horizontal') {
+        for (let i = 0; i < shipConfig.size; i++) {
+          thisGame[`${state.playerId}_grid`][y][x + i] = 1;
         }
-      } else if (
-        currentCellValue === 1 &&
-        thisGame[`${state.playerId}_shipsPlaced`] < 10
-      ) {
-        socket.emit(
-          "message",
-          `You're not allowed to place ships on top of each other! Place your ship in another cell...`
-        );
-      } else if (thisGame[`${state.playerId}_shipsPlaced`] >= 10) {
-        socket.emit(
-          "message",
-          `You've already placed the maximum number of ships available`
-        );
+      } else {
+        for (let i = 0; i < shipConfig.size; i++) {
+          thisGame[`${state.playerId}_grid`][y + i][x] = 1;
+        }
+      }
+      // Incrementar el contador de barcos colocados
+      thisGame[`${state.playerId}_${shipType}Count`]++;
+      thisGame[`${state.playerId}_shipsPlaced`]++;
+      
+      // Calculate total ships placed
+      const totalShipsRequired = Object.values(SHIPS).reduce((total, ship) => 
+        total + ship.count, 0);
+      // Notify player of remaining ships
+      socket.emit("message", 
+        `${shipType} colocado. Te quedan ${
+          shipConfig.count - thisGame[`${state.playerId}_${shipType}Count`]
+        } barcos de este tipo`
+      );
+
+    socket.emit("updateGrid", {
+      gridToUpdate: "friendlyGrid",
+      data: thisGame[`${state.playerId}_grid`],
+    });
+    if (thisGame[`${thisGame.players[0].id}_shipsPlaced`] >= totalShipsRequired &&
+      thisGame[`${thisGame.players[1].id}_shipsPlaced`] >= totalShipsRequired) {
+
+        let countdown = 5;
+        io.to(state.gameId).emit('startCountdown', countdown);
+        console.log("Inicio de contador");
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            io.to(state.gameId).emit('updateCountdown', countdown);
+              
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                thisGame.gameState = gameStates.gameQuestion;
+                io.to(state.gameId).emit('changeGameState', thisGame.gameState);
+                io.to(state.gameId).emit(
+                  "message",
+                  "¡Todos los barcos están colocados! Comienza la ronda de preguntas."
+                );
+            }
+        }, 1000);
       }
     }
   });
