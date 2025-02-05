@@ -1,3 +1,67 @@
+const AudioManager = {
+  backgroundMusic: new Audio('/assets/audios/Battleship.ogg'),
+  sounds: {
+    //click: new Audio('/assets/audios/click.wav'),
+    explosion: new Audio('/assets/audios/Explosion.mp3'),
+    splash: new Audio('/assets/audios/disparo_al_agua.wav'),
+    victory: new Audio('/assets/audios/Fin del juego.wav'),
+    defeat: new Audio('/assets/audios/Fin del juego.wav'),
+    questionAppear: new Audio('/assets/audios/alarma.wav'),
+    //correctAnswer: new Audio('/assets/audios/correct-answer.mp3'),
+    //wrongAnswer: new Audio('/assets/audios/wrong-answer.mp3'),
+    //countdown: new Audio('/assets/audios/.mp3')
+  },
+  settings: {
+    musicEnabled: true,
+    soundEnabled: true
+  },
+
+  init() {
+    // Configure background music
+    this.backgroundMusic.loop = true;
+    this.backgroundMusic.volume = 0.3;
+
+    // Configure sound effects
+    Object.values(this.sounds).forEach(sound => {
+      sound.volume = 0.5;
+    });
+
+    // Load settings from localStorage if available
+    const savedSettings = localStorage.getItem('audioSettings');
+    if (savedSettings) {
+      this.settings = JSON.parse(savedSettings);
+      if (!this.settings.musicEnabled) this.backgroundMusic.pause();
+    }
+  },
+
+  toggleMusic() {
+    this.settings.musicEnabled = !this.settings.musicEnabled;
+    if (this.settings.musicEnabled) {
+      this.backgroundMusic.play();
+    } else {
+      this.backgroundMusic.pause();
+    }
+    this.saveSettings();
+  },
+
+  toggleSound() {
+    this.settings.soundEnabled = !this.settings.soundEnabled;
+    this.saveSettings();
+  },
+
+  playSound(soundName) {
+    if (this.settings.soundEnabled && this.sounds[soundName]) {
+      const sound = this.sounds[soundName];
+      sound.currentTime = 0;
+      sound.play();
+    }
+  },
+
+  saveSettings() {
+    localStorage.setItem('audioSettings', JSON.stringify(this.settings));
+  }
+};
+
 (function (w, d) {
   // Get data from query string
   const { playerName, game, playerId } = Qs.parse(location.search, {
@@ -98,7 +162,20 @@
 
     // Init Game functions
     (function init() {
-      
+
+      AudioManager.init();
+      playerGrids.forEach((grid) => {
+        grid.addEventListener("click", (e) => {
+          const elementId = e.target.closest(".grid").id;
+  
+          if (e.target.classList.contains("cell")) {
+            AudioManager.playSound('click');
+          }
+  
+          // ... (rest of the click handler remains the same)
+        });
+      });
+
       // Join Game
       socket.emit("joinGame", {
         gameId: state.gameId,
@@ -239,6 +316,7 @@
       socket.on("changeGameState", (newGameState) => {
         switch (newGameState) {
           case gameStates.gameInitialized:
+            AudioManager.backgroundMusic.play();
             state.gameState = gameStates.gameInitialized;
             currentTurnText.innerHTML = "Initialized";
             console.log(state.gameState);
@@ -692,4 +770,8 @@
   }
 })(window, document);
 
-
+function playClickSound() {
+  const sound = document.getElementById('clickSound');
+  sound.currentTime = 0; // Reinicia el sonido si ya está reproduciéndose
+  sound.play();
+}
