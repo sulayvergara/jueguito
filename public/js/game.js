@@ -36,10 +36,16 @@ const AudioManager = {
 
   toggleMusic() {
     this.settings.musicEnabled = !this.settings.musicEnabled;
-    if (this.settings.musicEnabled) {
+    if (!this.backgroundMusic) return;
+
+    if (this.backgroundMusic.paused) {
       this.backgroundMusic.play();
+      this.settings.musicEnabled = true;
+      
     } else {
       this.backgroundMusic.pause();
+      this.settings.musicEnabled = false;
+      
     }
     this.saveSettings();
   },
@@ -59,8 +65,20 @@ const AudioManager = {
 
   saveSettings() {
     localStorage.setItem('audioSettings', JSON.stringify(this.settings));
+  },
+  loadSettings() {
+    const savedSettings = localStorage.getItem("audioSettings");
+    if (savedSettings) {
+      this.settings = JSON.parse(savedSettings);
+      if (!this.settings.musicEnabled) {
+        this.backgroundMusic.pause();
+      }
+    }
   }
 };
+
+// Cargar configuración guardada
+AudioManager.saveSettings();
 
 (function (w, d) {
   // Get data from query string
@@ -310,13 +328,25 @@ const AudioManager = {
                 window.location.href = './menu.html';
             }
         }, 1000);
-    });
+      });
+      // Al inicializar
+      toggleMusicBtn.textContent = "Música: ON";
+      toggleMusicBtn.addEventListener("click", (e) => {
+        AudioManager.toggleMusic();
+        toggleMusicBtn.textContent = AudioManager.settings.musicEnabled ? "Música: ON" : "Música: OFF";
+      });
+  
+      toggleSoundBtn.addEventListener("click", (e) => {
+        AudioManager.toggleSound();
+        toggleSoundBtn.textContent = AudioManager.settings.soundEnabled ? "Sonido: ON" : "Sonido: OFF";
+      });
 
       // On receiving gameStateChange
       socket.on("changeGameState", (newGameState) => {
         switch (newGameState) {
           case gameStates.gameInitialized:
             AudioManager.backgroundMusic.play();
+            AudioManager.saveSettings();
             state.gameState = gameStates.gameInitialized;
             currentTurnText.innerHTML = "Initialized";
             console.log(state.gameState);
@@ -466,11 +496,6 @@ const AudioManager = {
 
       showRulesBtn.addEventListener("click", (e) => {
         console.log("Show Rules Btn Pressed!");
-        alert("Coming Soon!");
-      });
-
-      toggleMusicBtn.addEventListener("click", (e) => {
-        console.log("Toggle Music Btn Pressed!");
         alert("Coming Soon!");
       });
 
