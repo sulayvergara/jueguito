@@ -33,7 +33,7 @@
     getGameIsAlreadyOverErrorMessage: () =>
       "Game is over! You can stop clicking!",
   };
-
+  
   // Game states
   const gameStates = {
     gameIsInitializing: "gameIsInitializing",
@@ -42,6 +42,15 @@
     gameRunning: "gameRunning",
     gameOver: "gameOver",
     gameQuestion: "gameQuestion",
+  };
+
+  // Ship configurations
+  const SHIPS = {
+    fragata: { size: 1, count: 4 },
+    destructor: { size: 2, count: 3 },
+    submarino: { size: 3, count: 2 },
+    acorazado: { size: 4, count: 1 },
+    portaviones: { size: 5, count: 1 }
   };
 
   // Global state variables
@@ -54,6 +63,15 @@
     PlayerGridData: initialGridData,
     currentRound: 0,
     yourTurn: false,
+    selectedShip: null,
+    orientation: 'horizontal', // or 'vertical'
+    placedShips: {
+      fragata: 0,
+      destructor: 0,
+      submarino: 0,
+      acorazado: 0,
+      portaviones: 0
+    }
   };
 
   // Prohibit modification of state
@@ -80,13 +98,14 @@
 
     // Init Game functions
     (function init() {
+      
       // Join Game
       socket.emit("joinGame", {
         gameId: state.gameId,
         playerId: state.playerId,
         playerName: state.playerName,
       });
-
+      
       // On receiving message
       socket.on("message", (message) =>
         addConsoleMessage(chatMessagesList, message)
@@ -203,7 +222,7 @@
         document.body.appendChild(gameOverDiv);
         
         // Iniciar cuenta regresiva y redireccionar
-        let countdown = 40;
+        let countdown = 5;
         const countdownInterval = setInterval(() => {
             countdown--;
             const countdownText = gameOverDiv.querySelector('p');
@@ -224,7 +243,7 @@
             currentTurnText.innerHTML = "Initialized";
             console.log(state.gameState);
             break;
-
+            
           case gameStates.setShipsRound:
             state.gameState = gameStates.setShipsRound;
             currentTurnText.innerHTML = "Place your ships!";
@@ -275,6 +294,27 @@
         e.preventDefault();
         leaveGame();
       });
+      // click en barco
+      document.querySelectorAll('.barco').forEach(shipElement => {
+        shipElement.addEventListener('click', (e) => {
+          const shipType = e.target.id;
+          if (state.gameState === gameStates.setShipsRound && 
+              state.placedShips[shipType] < SHIPS[shipType].count) {
+            state.selectedShip = shipType;
+            highlightSelectedShip(shipType);
+          } else if (state.placedShips[shipType] >= SHIPS[shipType].count) {
+            addConsoleMessage(chatMessagesList, `No more ${shipType} ships available to place!`);
+          }
+        });
+      });
+      
+      // Add keyboard listener for rotation
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'r' && state.selectedShip) {
+          state.orientation = state.orientation === 'horizontal' ? 'vertical' : 'horizontal';
+          addConsoleMessage(chatMessagesList, `Rotated ship to ${state.orientation}`);
+        }
+      });
 
       playerGrids.forEach((grid) => {
         grid.addEventListener("click", (e) => {
@@ -324,9 +364,15 @@
                 break;
 
               case "friendly-grid":
+                if (!state.selectedShip) {
+                  addConsoleMessage(chatMessagesList, "Por favor selecciona un barco primero");
+                  return;
+                }
                 socket.emit("clickOnFriendlyGrid", {
-                  x: e.target.dataset.x,
+                  x: parseInt(e.target.dataset.x),
                   y: e.target.dataset.y,
+                  shipType: state.selectedShip,
+                  orientation: state.orientation
                 });
 
                 console.log(
@@ -626,6 +672,18 @@
       }, 300);
     }
   }
+  
+  // FUNCIONES BARCOS
+  function highlightSelectedShip(shipType) {
+    document.querySelectorAll('.barco').forEach(el => el.classList.remove('selected'));
+    document.getElementById(shipType).classList.add('selected');
+    addConsoleMessage(chatMessagesList, 
+      `Selected ${shipType} (Size: ${SHIPS[shipType].size}). Press 'R' to rotate.`);
+  }
+  
+  
+
+// Modify the handleFriendlyGridClick function
 
   // Leave Game
   function leaveGame() {

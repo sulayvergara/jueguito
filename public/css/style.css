@@ -588,3 +588,25 @@ input[readonly] {
   background-color: #f0f0f0;
   cursor: not-allowed;
 }
+
+/*Barcos*/
+
+.barco {
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: background-color 0.3s;
+}
+
+.barco:hover {
+  background-color: #e0e0e0;
+}
+
+.barco.selected {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.barco.unavailable {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
