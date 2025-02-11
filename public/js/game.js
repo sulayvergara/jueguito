@@ -784,7 +784,8 @@ AudioManager.saveSettings();
       `Selected ${shipType} (Size: ${SHIPS[shipType].size}). Press 'R' to rotate.`);
   }
   
-  
+  // actualizacion tamaño barco tabla
+    
 
 // Modify the handleFriendlyGridClick function
 

@@ -610,3 +610,24 @@ input[readonly] {
   cursor: not-allowed;
   opacity: 0.5;
 }
+.count-updated {
+  animation: countUpdate 0.3s ease-in-out;
+}
+
+@keyframes countUpdate {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+    color: #ff4444;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.barco.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
