@@ -139,7 +139,7 @@ app.post("/games", async (req, res) => {
       const game = new Game(gameId, `${playerName}'s Game`, [player]);
 
       // Guardar en MongoDB
-      //await gameService.createGame(gameId, player);
+      await gameService.createGame(gameId, player);
 
       games = { ...games, [gameId]: game };
       console.log("All games currently live: ", JSON.stringify(games));
