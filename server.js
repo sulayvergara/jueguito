@@ -490,9 +490,6 @@ io.on("connection", (socket) => {
       
       io.to(state.gameId).emit("partidaTerminada", {
         ganadorId: state.playerId,
-        perdedorId: otherPlayerId,
-        ganadorShipsLost: thisGame[`${state.playerId}_shipsLost`],
-        perdedorShipsLost: thisGame[`${otherPlayerId}_shipsLost`]
       });  
 
       thisGame.gameState = gameStates.gameOver;
@@ -663,27 +660,19 @@ io.on("connection", (socket) => {
       "message",
       `${state.playerName} ha abandonado la partida.`
     );
-    if (thisGame)
-      thisGame.players = thisGame.players.filter(
-        (player) => player.id !== state.playerId
-      );
-    const remainingPlayer = thisGame.players.find(
-      (player) => player.id !== state.playerId
-    );
-    if (remainingPlayer) {  
-      io.to(state.gameId).emit("partidaTerminada", {
-        ganadorId: remainingPlayer.id,
-        perdedorId: state.playerId,
-        ganadorShipsLost: thisGame[`${remainingPlayer.id}_shipsLost`] || 0,
-        perdedorShipsLost: thisGame[`${state.playerId}_shipsLost`] || 0,
-        abandonado: true
+    
+      io.to(state.gameId).emit("abandonopartida", {
+        ganadorId: state.playerId,
       });
-    }
+
     if (thisGame && thisGame.players && thisGame.players.length === 0) {
       thisGame = null;
       delete games[state.gameId];
     }
-
+    if (thisGame)
+      thisGame.players = thisGame.players.filter(
+        (player) => player.id !== state.playerId
+      );
     socket.disconnect();
   });
 });

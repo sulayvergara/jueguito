@@ -329,6 +329,36 @@ AudioManager.saveSettings();
             }
         }, 1000);
       });
+      socket.on("abandonopartida", (data) => {
+        const gameOverDiv = document.createElement('div');
+        gameOverDiv.className = 'game-over-overlay';
+        
+        const mensaje = state.playerId === data.ganadorId ? 
+            '¡Has Perdido!' : 
+            '¡Has Ganado!';
+        
+        gameOverDiv.innerHTML = `
+            <div class="game-over-content">
+                <h2>${mensaje}</h2>
+                <p>Volviendo al menú en 5 segundos...</p>
+            </div>
+        `;
+        
+        document.body.appendChild(gameOverDiv);
+        
+        // Iniciar cuenta regresiva y redireccionar
+        let countdown = 5;
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            const countdownText = gameOverDiv.querySelector('p');
+            countdownText.textContent = `Volviendo al menú en ${countdown} segundos...`;
+            
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                window.location.href = './menu.html';
+            }
+        }, 1000);
+      });
       // Al inicializar
       toggleMusicBtn.textContent = "Música: ON";
       toggleMusicBtn.addEventListener("click", (e) => {
@@ -578,6 +608,78 @@ AudioManager.saveSettings();
   // Update grid
   function updateGrid(rootElement, captionText, data) {
     const letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
+    
+    
+    // Helper function to determine ship size at a position
+  function getShipSizeAtPosition(data, x, y) {
+    if (data[y][x] !== 1) return 0;
+    
+    // Check horizontal ship size
+    let horizontalSize = 1;
+    let i = x + 1;
+    while (i < 10 && data[y][i] === 1) {
+      horizontalSize++;
+      i++;
+    }
+    i = x - 1;
+    while (i >= 0 && data[y][i] === 1) {
+      horizontalSize++;
+      i--;
+    }
+    
+    // Check vertical ship size
+    let verticalSize = 1;
+    let j = y + 1;
+    while (j < 10 && data[j][x] === 1) {
+      verticalSize++;
+      j++;
+    }
+    j = y - 1;
+    while (j >= 0 && data[j][x] === 1) {
+      verticalSize++;
+      j--;
+    }
+    
+    return Math.max(horizontalSize, verticalSize);
+    }
+
+    // Helper function to determine ship orientation
+    function isHorizontalShip(data, x, y) {
+      return (x + 1 < 10 && data[y][x + 1] === 1) || (x - 1 >= 0 && data[y][x - 1] === 1);
+    }
+
+    // Helper function to check if this is the start of a ship
+    function isShipStart(data, x, y) {
+      if (data[y][x] !== 1) return false;
+      const isHorizontal = isHorizontalShip(data, x, y);
+      
+      if (isHorizontal) {
+        return x === 0 || data[y][x - 1] !== 1;
+      } else {
+        return y === 0 || data[y - 1][x] !== 1;
+      }
+    }
+    function getShipImagePath(size) {
+      switch(size) {
+        case 1: return `/assets/img/ships/fragata.png`;
+        case 2: return `/assets/img/ships/destructor.png`;
+        case 3: return `/assets/img/ships/submarino.png`;
+        case 4: return `/assets/img/ships/acorazado.png`;
+        case 5: return `/assets/img/ships/portaviones.png`;
+        default: return '';
+      }
+    }
+    // Helper function to get ship class name based on size
+    function getShipClassName(size) {
+      switch(size) {
+        case 1: return 'fragata';
+        case 2: return 'destructor';
+        case 3: return 'submarino';
+        case 4: return 'acorazado';
+        case 5: return 'portaviones';
+        default: return '';
+      }
+    }
     const tableHeaderCells = new Array(10)
       .fill("", 0, 10)
       .map((_, i) => `<th>${i}</th>`)
@@ -594,8 +696,23 @@ AudioManager.saveSettings();
                 return `<td class="cell ship-hit" data-x="${indexX}" data-y="${letters[indexY]}"></td>`;
               case 2:
                 return `<td class="cell water-hit" data-x="${indexX}" data-y="${letters[indexY]}"></td>`;
-              case 1:
-                return `<td class="cell ship" data-x="${indexX}" data-y="${letters[indexY]}"></td>`;
+              case 1:{
+                if (isShipStart(data, indexX, indexY)) {
+                  const shipSize = getShipSizeAtPosition(data, indexX, indexY);
+                  const isHorizontal = isHorizontalShip(data, indexX, indexY);
+                  const imgPath = getShipImagePath(shipSize);
+                  const shipClass = getShipClassName(shipSize);
+                  
+                  return `<td class="cell ship ${shipClass} ${isHorizontal ? 'horizontal' : 'vertical'}" 
+                  data-x="${indexX}" data-y="${letters[indexY]}" 
+                  data-size="${shipSize}">
+                  <img src="${imgPath}" alt="${shipClass}" class="ship-image"/>
+                  </td>`;
+              } else {
+                return `<td class="cell ship-continuation" data-x="${indexX}" data-y="${letters[indexY]}"></td>`;
+              }
+              }
+                
               case 0:
               default:
                 return `<td class="cell" data-x="${indexX}" data-y="${letters[indexY]}"></td>`;

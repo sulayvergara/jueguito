@@ -158,6 +158,79 @@ input[type='submit'],
   background-color: #206f86;
   cursor: pointer;
 }
+/* Estilos base para las celdas */
+
+
+/* Ship image positioning */
+.ship-image {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform-origin: left center;
+  height: 40px;
+  transition: transform 0.3s ease;
+}
+
+/* Ship orientation classes */
+.horizontal .ship-image {
+  transform: translateY(-50%);
+}
+
+.vertical .ship-image {
+  transform: translateY(-50%) rotate(90deg);
+  transform-origin: 20px center; /* Half of cell height (40px/2) */
+}
+
+/* Ship type specific sizes */
+.fragata .ship-image {
+  width: 40px; /* 1 cell */
+}
+
+.destructor .ship-image {
+  width: 80px; /* 2 cells */
+}
+
+.submarino .ship-image {
+  width: 120px; /* 3 cells */
+}
+
+.acorazado .ship-image {
+  width: 160px; /* 4 cells */
+}
+
+.portaviones .ship-image {
+  width: 200px; /* 5 cells */
+}
+
+/* Ship cell styling */
+.ship {
+  background-color: transparent !important;
+  position: relative;
+  z-index: 1;
+}
+
+.ship-continuation {
+  background-color: transparent !important;
+}
+
+/* Hit state styling */
+.ship-hit .ship-image {
+  opacity: 0.7;
+  filter: brightness(0.8) contrast(1.2);
+}
+
+/* Base cell size */
+.cell {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+/* Vista previa de barcos en cuadricula*/
+
+
 
 .panel,
 .info,
