@@ -158,7 +158,80 @@ input[type='submit'],
   background-color: #206f86;
   cursor: pointer;
 }
-/* Estilos base para las celdas */
+/* Ajuste de posición general para el cursor follower */
+.cursor-follower {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-10%, -60%); /* Mueve los barcos hacia arriba */
+}
+.cursor-follower {
+  position: fixed !important;
+  will-change: transform;
+}
+.ship-preview {
+  position: relative;
+  display: flex;
+  align-items: flex-start; /* Change from center to flex-start */
+  justify-content: flex-start; /* Change from center to flex-start */
+}
+
+/* Tamaños específicos para cada tipo de barco en el preview */
+.ship-preview img {
+  height: 20px; /* Tamaño base más pequeño */
+  width: auto;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+
+/* Ajuste de anchos para los barcos en el preview */
+.ship-preview.fragata { 
+  width: 20px; /* 1 cell */
+}
+
+.ship-preview.destructor { 
+  width: 45px; /* 2 cells */
+}
+
+.ship-preview.submarino { 
+  width: 70px; /* 3 cells */
+}
+
+.ship-preview.acorazado { 
+  width: 90px; /* 4 cells */
+}
+
+.ship-preview.portaviones { 
+  width: 110px; /* 5 cells */
+}
+/* Ajustes de altura específicos para cada tipo de barco en el preview */
+.ship-preview.fragata img {
+  height: 20px;
+}
+
+.ship-preview.destructor img {
+  height: 20px;
+}
+
+.ship-preview.submarino img {
+  height: 20px;
+}
+
+.ship-preview.acorazado img {
+  height: 20px;
+}
+
+.ship-preview.portaviones img {
+  height: 20px;
+}
+/* Orientaciones */
+.ship-preview.vertical img {
+  transform: rotate(90deg);
+  transform-origin: 10px 10px; /* Ajustado para el nuevo tamaño */
+}
+
+
 
 
 /* Ship image positioning */
@@ -167,7 +240,7 @@ input[type='submit'],
   top: 50%;
   left: 0;
   transform-origin: left center;
-  height: 40px;
+  height: 20px;
   transition: transform 0.3s ease;
 }
 
@@ -178,28 +251,28 @@ input[type='submit'],
 
 .vertical .ship-image {
   transform: translateY(-50%) rotate(90deg);
-  transform-origin: 20px center; /* Half of cell height (40px/2) */
+  transform-origin: 10px center; /* Half of cell height (40px/2) */
 }
 
 /* Ship type specific sizes */
 .fragata .ship-image {
-  width: 40px; /* 1 cell */
+  width: 20px; /* 1 cell */
 }
 
 .destructor .ship-image {
-  width: 80px; /* 2 cells */
+  width: 45px; /* 2 cells */
 }
 
 .submarino .ship-image {
-  width: 120px; /* 3 cells */
+  width: 70px; /* 3 cells */
 }
 
 .acorazado .ship-image {
-  width: 160px; /* 4 cells */
+  width: 90px; /* 4 cells */
 }
 
 .portaviones .ship-image {
-  width: 200px; /* 5 cells */
+  width: 110px; /* 5 cells */
 }
 
 /* Ship cell styling */
@@ -222,8 +295,8 @@ input[type='submit'],
 /* Base cell size */
 .cell {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 20px;
+  height: 20px;
   padding: 0 !important;
   overflow: visible !important;
 }

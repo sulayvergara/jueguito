@@ -139,7 +139,7 @@ app.post("/games", async (req, res) => {
       const game = new Game(gameId, `${playerName}'s Game`, [player]);
 
       // Guardar en MongoDB
-      await gameService.createGame(gameId, player);
+      //await gameService.createGame(gameId, player);
 
       games = { ...games, [gameId]: game };
       console.log("All games currently live: ", JSON.stringify(games));
@@ -221,7 +221,7 @@ async function obtenerPreguntaAleatoria() {
 
 function handleQuestionTimeout(gameId, io) {
   const game = games[gameId];
-  if (!game) return;
+  if (!game || game.gameState === gameStates.gameOver) return;
 
   clearTimeout(gameQuestionStates[gameId]?.timer);
   game.currentQuestion = null;
@@ -229,15 +229,17 @@ function handleQuestionTimeout(gameId, io) {
 
   io.to(gameId).emit('timeExpired');
   // Iniciar nueva pregunta después de un breve retraso
-  setTimeout(() => {
-    startNewQuestion(gameId, io);
-  }, 1000);
+  if (game.gameState !== gameStates.gameOver) {
+    setTimeout(() => {
+      startNewQuestion(gameId, io);
+    }, 1000);
+  }
 }
 
 // Función para iniciar una nueva pregunta
 async function startNewQuestion(gameId, io) {
   const game = games[gameId];
-  if (!game) return;
+  if (!game || game.gameState === gameStates.gameOver) return;
 
   // Limpiar el temporizador anterior si existe
   if (gameQuestionStates[gameId]?.timer) {
@@ -254,6 +256,9 @@ async function startNewQuestion(gameId, io) {
   gameQuestionStates[gameId].wrongAnswers.clear();
 
   try {
+    // Verificar nuevamente el estado del juego antes de obtener una nueva pregunta
+    if (game.gameState === gameStates.gameOver) return;
+
     const question = await obtenerPreguntaAleatoria();
     if (!question) {
       throw new Error('No se pudo obtener una pregunta');
@@ -262,14 +267,18 @@ async function startNewQuestion(gameId, io) {
     game.currentQuestion = question;
     io.to(gameId).emit('showQuestion', question);
 
-    // Iniciar nuevo temporizador
-    gameQuestionStates[gameId].timer = setTimeout(() => {
-      handleQuestionTimeout(gameId, io);
-    }, 30000);
+    // Iniciar nuevo temporizador solo si el juego sigue activo
+    if (game.gameState !== gameStates.gameOver) {
+      gameQuestionStates[gameId].timer = setTimeout(() => {
+        handleQuestionTimeout(gameId, io);
+      }, 30000);
+    }
 
   } catch (error) {
     console.error('Error al iniciar nueva pregunta:', error);
-    handleQuestionTimeout(gameId, io);
+    if (game.gameState !== gameStates.gameOver) {
+      handleQuestionTimeout(gameId, io);
+    }
   }
 }
 
@@ -292,10 +301,10 @@ function handlePlayerAnswer(gameId, playerId, playerName, answer, io, socket) {
     game.currentTurn = playerId;
 
     // Notificar a los jugadores
-    socket.emit("message", `Obtienes ${game.currentPlayerShots} disparos.`);
+    socket.emit("message", `¡Respuesta correcta! Obtienes ${game.currentPlayerShots} disparos.`);
+    socket.broadcast.to(gameId).emit("message", `${playerName} respondió correctamente. No es tu turno.`);
     io.to(gameId).emit('changeGameState', game.gameState);
     io.to(gameId).emit('correctAnswer', { playerName, playerId });
-    io.to(gameId).emit("message", "¡A disparar!");
     socket.emit("yourTurn", true);
   } else {
     gameQuestionStates[gameId].wrongAnswers.add(playerId);
@@ -352,7 +361,7 @@ io.on("connection", (socket) => {
 
   let thisGame;
 
-  socket.on("joinGame", ({ gameId, playerId, playerName }) => {
+socket.on("joinGame", ({ gameId, playerId, playerName }) => {
     // Set state variables for this connection
     state.gameId = gameId;
     state.playerName = playerName;
@@ -374,16 +383,16 @@ io.on("connection", (socket) => {
     // Change game state to "initialized"
     thisGame.gameState = gameStates.gameInitialized;
     socket.emit("changeGameState", thisGame.gameState);
-    socket.emit("message", "Welcome to the game!");
+    socket.emit("message", "Bienvenido al juego!");
 
     // Broadcast to other player that another player has joined
     socket.broadcast
       .to(state.gameId)
-      .emit("message", `${state.playerName} has joined the game.`);
+      .emit("message", `${state.playerName} se ha unido al juego.`);
 
     // Check number of players, as soon as both players are there => game can start
     if (thisGame.players.length <= 1) {
-      socket.emit("message", "Waiting for other players to join...");
+      socket.emit("message", "A la espera de que se una un jugador...");
     } else if (thisGame.players.length >= 2) {
       // Unlist game from lobby as soon as a second player joins
       thisGame.isListed = false;
@@ -392,7 +401,7 @@ io.on("connection", (socket) => {
       io.to(state.gameId).emit("changeGameState", thisGame.gameState);
       io.to(state.gameId).emit(
         "message",
-        "The game has started! Place your ships!"
+        "¡El juego ha comenzado! ¡Coloca tus barcos!"
       );
     }
   });
@@ -478,6 +487,10 @@ io.on("connection", (socket) => {
       }
       // Verificar si todos los barcos han sido destruidos
     if (totalHitCells >= totalShipCells) {
+      if (gameQuestionStates[state.gameId]?.timer) {
+        clearTimeout(gameQuestionStates[state.gameId].timer);
+        delete gameQuestionStates[state.gameId];
+      }
       await gameService.endGame(state.gameId, state.playerId, state.playerName);
       socket.emit("updateGrid", {
         gridToUpdate: "enemyGrid",
@@ -530,10 +543,6 @@ io.on("connection", (socket) => {
         (player) => player.id !== state.playerId
       )[0].id;
       thisGame.currentTurn = nextPlayerId; // Actualizar quién tiene el turno
-      io.to(state.gameId).emit(
-        "message",
-        `Es el turno de ${thisGame.players.find(player => player.id === nextPlayerId).name}`
-      );
     } catch (error) {
       console.error("Error processing shot:", error);
     }

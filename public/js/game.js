@@ -103,17 +103,17 @@ AudioManager.saveSettings();
 
   // Strings
   const strings = {
-    getInitialGameConsoleString: () => `Please wait! Initializing Game...`,
-    getInitialCurrentTurnString: () => "Initializing Game...",
-    getLeaveConfirmText: () => `Are you sure you want to leave the game?`,
-    getEnemyGridCaption: () => "Enemy Waters",
-    getHomeGridCaption: () => "Home Waters",
+    getInitialGameConsoleString: () => `Por favor, espere. Inicializando el juego...`,
+    getInitialCurrentTurnString: () => "Inicializando el juego...",
+    getLeaveConfirmText: () => `¿Estás seguro de que quieres dejar el juego?`,
+    getEnemyGridCaption: () => "Enemigo",
+    getHomeGridCaption: () => "Tú",
     getGameHasNotStartedErrorMessage: () =>
-      "You cannot attack yet, because the game hasn't started. Please place all of your ships for the game to begin!",
+      "Todavía no puedes atacar, porque el juego no ha comenzado. Por favor, coloque todas sus barcos para que el juego comience!",
     getWrongFieldClickedErrorMessage: () =>
-      "There's no point in clicking here! Click on your enemies' play field to attack his ships.",
+      "¡No tiene sentido hacer clic aquí! Haz clic en el campo de juego de tu enemigo para atacar sus barcos.",
     getGameIsAlreadyOverErrorMessage: () =>
-      "Game is over! You can stop clicking!",
+      "¡Se acabó el juego! Puede dejar de hacer clic!",
   };
   
   // Game states
@@ -220,9 +220,9 @@ AudioManager.saveSettings();
       socket.on("yourTurn", (value) => {
         state.yourTurn = value;
         if (state.yourTurn) {
-          currentTurnText.innerHTML = `It's your turn!`;
+          currentTurnText.innerHTML = `Es tu turno!`;
         } else {
-          currentTurnText.innerHTML = `Other player's turn...`;
+          currentTurnText.innerHTML = `Turno del otro jugador...`;
         }
       });
       socket.on('showQuestion', (preguntaData) => {
@@ -250,7 +250,6 @@ AudioManager.saveSettings();
 
       socket.on('correctAnswer', (data) => {
         hideQuizModal();
-        addConsoleMessage(chatMessagesList, `¡${data.playerName} respondió correctamente!`);
       });
       
       socket.on('wrongAnswer', () => {
@@ -378,30 +377,31 @@ AudioManager.saveSettings();
             AudioManager.backgroundMusic.play();
             AudioManager.saveSettings();
             state.gameState = gameStates.gameInitialized;
-            currentTurnText.innerHTML = "Initialized";
+            currentTurnText.innerHTML = "Inicializando";
             console.log(state.gameState);
             break;
             
           case gameStates.setShipsRound:
             state.gameState = gameStates.setShipsRound;
-            currentTurnText.innerHTML = "Place your ships!";
+            currentTurnText.innerHTML = "Coloca tus barcos!";
             console.log(state.gameState);
             break;
           case gameStates.gameQuestion:
             state.gameState = gameStates.gameQuestion;
             currentTurnText.innerHTML = "¡Responde la pregunta!";
             console.log("Cambiando a estado de preguntas");
+            removeShipFollower();
             socket.emit('gameQuestion');
             break;    
           case gameStates.gameRunning: {
             state.gameState = gameStates.gameRunning;
-            currentTurnText.innerHTML = "Let the fighting begin!";
+            currentTurnText.innerHTML = "¡Que empiece la lucha!";
             console.log(state.gameState);
             break;
           }
           case gameStates.gameOver:
             state.gameState = gameStates.gameOver;
-            currentTurnText.innerHTML = "Game Over!";
+            currentTurnText.innerHTML = "Se acabó el juego!";
             setTimeout(() => redirectToHomePage(), 5000);
             console.log(state.gameState);
             break;          
@@ -433,26 +433,103 @@ AudioManager.saveSettings();
         leaveGame();
       });
       // click en barco
+
+      const cursorFollower = document.createElement('div');
+      cursorFollower.className = 'cursor-follower';
+      document.body.appendChild(cursorFollower);
+
       document.querySelectorAll('.barco').forEach(shipElement => {
         shipElement.addEventListener('click', (e) => {
+          if (!e.target.closest('.friendly-grid')) {
+            removeShipFollower();
+          }
           const shipType = e.target.id;
           if (state.gameState === gameStates.setShipsRound && 
               state.placedShips[shipType] < SHIPS[shipType].count) {
             state.selectedShip = shipType;
             highlightSelectedShip(shipType);
-          } else if (state.placedShips[shipType] >= SHIPS[shipType].count) {
-            addConsoleMessage(chatMessagesList, `No more ${shipType} ships available to place!`);
+            createShipFollower(shipType);
+            addConsoleMessage(chatMessagesList, 
+              `Seleccionado ${shipType} (Tamaño: ${SHIPS[shipType].size}). Pulse 'R' para rotar.`);
           }
         });
       });
       
+
+      function createShipFollower(shipType) {
+        const shipImagePath = getShipImagePath(shipType);
+        const cursorFollower = document.querySelector('.cursor-follower');
+      
+        if (!cursorFollower) return;
+      
+        cursorFollower.innerHTML = `
+          <div class="ship-preview ${shipType} ${state.orientation}">
+            <img src="${shipImagePath}" alt="${shipType}" />
+          </div>
+        `;
+      
+        cursorFollower.style.display = 'block';
+        
+        // Update scroll position to ensure ship is visible
+        const shipElement = document.getElementById(shipType);
+        if (shipElement) {
+          const rect = shipElement.getBoundingClientRect();
+          if (rect.top < 0 || rect.bottom > window.innerHeight) {
+            shipElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      
+        document.addEventListener('mousemove', moveFollower);
+      }
+        function moveFollower(e) {
+          const cursorFollower = document.querySelector('.cursor-follower');
+          if (!cursorFollower) return;
+        
+          // Get viewport dimensions
+          const viewportHeight = window.innerHeight;
+          const viewportWidth = window.innerWidth;
+          
+          // Get ship preview dimensions
+          const shipPreview = cursorFollower.querySelector('.ship-preview');
+          const shipHeight = shipPreview ? shipPreview.offsetHeight : 0;
+          const shipWidth = shipPreview ? shipPreview.offsetWidth : 0;
+        
+          // Calculate position relative to scroll
+          let x = e.clientX;
+          let y = e.clientY;
+        
+          // Ensure the ship stays within viewport bounds
+          x = Math.min(x, viewportWidth - shipWidth);
+          y = Math.min(y, viewportHeight - shipHeight);
+        
+          // Apply position directly without transform
+          cursorFollower.style.left = `${x}px`;
+          cursorFollower.style.top = `${y}px`;
+        }
+      
+        function removeShipFollower() {
+          const cursorFollower = document.querySelector('.cursor-follower');
+          if (!cursorFollower) return;
+      
+          cursorFollower.style.display = 'none';
+          document.removeEventListener('mousemove', moveFollower);
+        }
+
+      function getShipImagePath(shipType) {
+        return `/assets/img/ships/${shipType}.png`;
+      }
       // Add keyboard listener for rotation
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'r' && state.selectedShip) {
+        if (e.key.toLowerCase() === 'r' && state.selectedShip) {
           state.orientation = state.orientation === 'horizontal' ? 'vertical' : 'horizontal';
-          addConsoleMessage(chatMessagesList, `Rotated ship to ${state.orientation}`);
+          const shipPreview = document.querySelector('.ship-preview');
+          if (shipPreview) {
+            shipPreview.classList.remove('horizontal', 'vertical');
+            shipPreview.classList.add(state.orientation);
+          }
         }
       });
+  
 
       playerGrids.forEach((grid) => {
         grid.addEventListener("click", (e) => {
@@ -897,8 +974,7 @@ AudioManager.saveSettings();
   function highlightSelectedShip(shipType) {
     document.querySelectorAll('.barco').forEach(el => el.classList.remove('selected'));
     document.getElementById(shipType).classList.add('selected');
-    addConsoleMessage(chatMessagesList, 
-      `Selected ${shipType} (Size: ${SHIPS[shipType].size}). Press 'R' to rotate.`);
+    
   }
   
   // actualizacion tamaño barco tabla
