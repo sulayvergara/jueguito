@@ -221,18 +221,27 @@ async function obtenerPreguntaAleatoria() {
 
 function handleQuestionTimeout(gameId, io) {
   const game = games[gameId];
-  if (!game || game.gameState === gameStates.gameOver) return;
+  if (!game || game.gameState === gameStates.gameOver) {
+    if (gameQuestionStates[gameId]) {
+      gameQuestionStates[gameId].isQuestionInProgress = false;
+    }
+    return;
+  }
 
   clearTimeout(gameQuestionStates[gameId]?.timer);
   game.currentQuestion = null;
   gameQuestionStates[gameId].wrongAnswers.clear();
+  gameQuestionStates[gameId].isQuestionInProgress = false;
 
   io.to(gameId).emit('timeExpired');
+  
   // Iniciar nueva pregunta después de un breve retraso
   if (game.gameState !== gameStates.gameOver) {
     setTimeout(() => {
-      startNewQuestion(gameId, io);
-    }, 1000);
+      if (!gameQuestionStates[gameId]?.isQuestionInProgress) {
+        startNewQuestion(gameId, io);
+      }
+    }, 3000); // Aumentado a 3 segundos para dar más tiempo entre preguntas
   }
 }
 
@@ -241,23 +250,31 @@ async function startNewQuestion(gameId, io) {
   const game = games[gameId];
   if (!game || game.gameState === gameStates.gameOver) return;
 
+  // Verificar si ya hay una pregunta en curso
+  if (gameQuestionStates[gameId]?.isQuestionInProgress) {
+    console.log(`Pregunta ya en curso para el juego ${gameId}`);
+    return;
+  }
+
   // Limpiar el temporizador anterior si existe
   if (gameQuestionStates[gameId]?.timer) {
     clearTimeout(gameQuestionStates[gameId].timer);
   }
 
   // Inicializar o resetear el estado de las preguntas para este juego
-  if (!gameQuestionStates[gameId]) {
-    gameQuestionStates[gameId] = {
-      timer: null,
-      wrongAnswers: new Set()
-    };
-  }
-  gameQuestionStates[gameId].wrongAnswers.clear();
+  gameQuestionStates[gameId] = {
+    timer: null,
+    wrongAnswers: new Set(),
+    isQuestionInProgress: true,
+    lastQuestionTime: Date.now()
+  };
 
   try {
     // Verificar nuevamente el estado del juego antes de obtener una nueva pregunta
-    if (game.gameState === gameStates.gameOver) return;
+    if (game.gameState === gameStates.gameOver) {
+      gameQuestionStates[gameId].isQuestionInProgress = false;
+      return;
+    }
 
     const question = await obtenerPreguntaAleatoria();
     if (!question) {
@@ -276,11 +293,13 @@ async function startNewQuestion(gameId, io) {
 
   } catch (error) {
     console.error('Error al iniciar nueva pregunta:', error);
+    gameQuestionStates[gameId].isQuestionInProgress = false;
     if (game.gameState !== gameStates.gameOver) {
       handleQuestionTimeout(gameId, io);
     }
   }
 }
+
 
 // Función para manejar la respuesta de un jugador
 function handlePlayerAnswer(gameId, playerId, playerName, answer, io, socket) {
@@ -293,6 +312,7 @@ function handlePlayerAnswer(gameId, playerId, playerName, answer, io, socket) {
     // Limpiar el temporizador y estado
     clearTimeout(gameQuestionStates[gameId]?.timer);
     gameQuestionStates[gameId].wrongAnswers.clear();
+    gameQuestionStates[gameId].isQuestionInProgress = false;
     game.currentQuestion = null;
 
     // Configurar estado del juego y disparos
@@ -313,12 +333,15 @@ function handlePlayerAnswer(gameId, playerId, playerName, answer, io, socket) {
       // Ambos jugadores respondieron incorrectamente
       clearTimeout(gameQuestionStates[gameId].timer);
       gameQuestionStates[gameId].wrongAnswers.clear();
+      gameQuestionStates[gameId].isQuestionInProgress = false;
 
       io.to(gameId).emit('message', '¡Ambos jugadores fallaron! Nueva pregunta...');
 
       setTimeout(() => {
-        startNewQuestion(gameId, io);
-      }, 1);
+        if (!gameQuestionStates[gameId]?.isQuestionInProgress) {
+          startNewQuestion(gameId, io);
+        }
+      }, 1000);
     } else {
       socket.emit('message', 'Respuesta incorrecta, ¡espera a que el otro jugador responda!');
     }
@@ -674,6 +697,11 @@ socket.on("joinGame", ({ gameId, playerId, playerName }) => {
         ganadorId: state.playerId,
       });
 
+    // Limpiar el estado de las preguntas
+    if (gameQuestionStates[state.gameId]) {
+      clearTimeout(gameQuestionStates[state.gameId].timer);
+      delete gameQuestionStates[state.gameId];
+    }
     if (thisGame && thisGame.players && thisGame.players.length === 0) {
       thisGame = null;
       delete games[state.gameId];
