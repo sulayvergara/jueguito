@@ -179,10 +179,6 @@ function mostrarFormulario() {
     const mainTab = document.getElementById('main-tab');
     mainTab.classList.add('hidden');
 
-    // Ocultar desconectar 
-    const parrafo = document.querySelector('desconectar');
-    parrafo.classList.remove('hidden');
-
     // Mostrar la pestaña de gestionar preguntas
     const preguntasTab = document.getElementById('preguntas-tab');
     preguntasTab.classList.remove('hidden');
